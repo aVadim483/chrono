@@ -19,7 +19,7 @@ class Chrono
      *
      * @return DateTimeInterval
      */
-    static public function createInterval($sInterval, $sBaseDate = null)
+    public static function createInterval($sInterval, $sBaseDate = null)
     {
         return new DateTimeInterval($sInterval, $sBaseDate);
     }
@@ -30,7 +30,7 @@ class Chrono
      *
      * @return DateTime
      */
-    static public function createDate($sDateTime, $xDateTimeZone = null)
+    public static function createDate($sDateTime, $xDateTimeZone = null)
     {
         return new DateTime($sDateTime, $xDateTimeZone);
     }
@@ -40,7 +40,7 @@ class Chrono
      *
      * @return DateTime
      */
-    static public function now($xDateTimeZone = null)
+    public static function now($xDateTimeZone = null)
     {
         return self::createDate('now', $xDateTimeZone);
     }
@@ -50,7 +50,7 @@ class Chrono
      *
      * @return DateTime
      */
-    static public function today($xDateTimeZone = null)
+    public static function today($xDateTimeZone = null)
     {
         return self::createFrom(null, null, null, 0, 0, 0, $xDateTimeZone);
     }
@@ -66,7 +66,7 @@ class Chrono
      *
      * @return DateTime
      */
-    static public function createFrom($iYear, $iMonth = null, $iDay = null, $iHour = null, $iMinute = null, $iSecond = null, $sTimeZone = null)
+    public static function createFrom($iYear, $iMonth = null, $iDay = null, $iHour = null, $iMinute = null, $iSecond = null, $sTimeZone = null)
     {
         if (func_num_args() < 7) {
             $aArgs = func_get_args();
@@ -100,7 +100,7 @@ class Chrono
      *
      * @return DateTime
      */
-    static public function createFromDate($iYear, $iMonth = null, $iDay = null, $sTimeZone = null)
+    public static function createFromDate($iYear, $iMonth = null, $iDay = null, $sTimeZone = null)
     {
         return static::createFrom($iYear, $iMonth, $iDay, $iHour = null, $iMinute = null, $iSecond = null, $sTimeZone);
     }
@@ -113,7 +113,7 @@ class Chrono
      *
      * @return DateTime
      */
-    static public function createFromTime($iHour = null, $iMinute = null, $iSecond = null, $sTimeZone = null)
+    public static function createFromTime($iHour = null, $iMinute = null, $iSecond = null, $sTimeZone = null)
     {
         return static::createFrom(null, null, null, $iHour, $iMinute, $iSecond, $sTimeZone);
     }
@@ -124,7 +124,7 @@ class Chrono
      *
      * @return DateTimePeriod
      */
-    static public function createPeriod($xDate1, $xDate2)
+    public static function createPeriod($xDate1, $xDate2)
     {
         return new DateTimePeriod($xDate1, $xDate2);
     }
@@ -158,7 +158,7 @@ class Chrono
      *
      * @return  int
      */
-    static public function totalSeconds($sInterval, $sBaseDate = null)
+    public static function totalSeconds($sInterval, $sBaseDate = null)
     {
         return static::calcTotal('totalSeconds', $sInterval, $sBaseDate);
     }
@@ -171,7 +171,7 @@ class Chrono
      *
      * @return  int
      */
-    static public function totalMinutes($sInterval, $sBaseDate = null)
+    public static function totalMinutes($sInterval, $sBaseDate = null)
     {
         return static::calcTotal('totalMinutes', $sInterval, $sBaseDate);
     }
@@ -184,7 +184,7 @@ class Chrono
      *
      * @return  int
      */
-    static public function totalHours($sInterval, $sBaseDate = null)
+    public static function totalHours($sInterval, $sBaseDate = null)
     {
         return static::calcTotal('totalHours', $sInterval, $sBaseDate);
     }
@@ -197,7 +197,7 @@ class Chrono
      *
      * @return  int
      */
-    static public function totalDays($sInterval, $sBaseDate = null)
+    public static function totalDays($sInterval, $sBaseDate = null)
     {
         return static::calcTotal('totalDays', $sInterval, $sBaseDate);
     }
@@ -209,7 +209,7 @@ class Chrono
      *
      * @return string
      */
-    static public function dateAddFormat($sDate, $sInterval, $sFormat = 'Y-m-d H:i:s')
+    public static function dateAddFormat($sDate, $sInterval, $sFormat = 'Y-m-d H:i:s')
     {
         $oDate = static::createDate($sDate);
         $oInterval = static::createInterval($sInterval);
@@ -225,7 +225,7 @@ class Chrono
      *
      * @return string
      */
-    static public function dateSubFormat($sDate, $sInterval, $sFormat = 'Y-m-d H:i:s')
+    public static function dateSubFormat($sDate, $sInterval, $sFormat = 'Y-m-d H:i:s')
     {
         $oDate = static::createDate($sDate);
         $oInterval = static::createInterval($sInterval);
@@ -240,13 +240,11 @@ class Chrono
      *
      * @return int
      */
-    static public function dateDiffSeconds($sDate1, $sDate2)
+    public static function dateDiffSeconds($sDate1, $sDate2)
     {
         $oDate1 = static::createDate($sDate1);
         $oDate2 = static::createDate($sDate2);
-        $nDiff = $oDate2->getTimestamp() - $oDate1->getTimestamp();
-
-        return $nDiff;
+        return $oDate2->getTimestamp() - $oDate1->getTimestamp();
     }
 
     /**
@@ -256,7 +254,7 @@ class Chrono
      *
      * @return bool
      */
-    static public function compare($xDate1, $sOperator, $xDate2)
+    public static function compare($xDate1, $sOperator, $xDate2)
     {
         $oDate1 = static::createDate($xDate1);
         $oDate2 = static::createDate($xDate2);
@@ -270,7 +268,7 @@ class Chrono
      *
      * @return int
      */
-    static public function compareWidth($xDate1, $xDate2)
+    public static function compareWidth($xDate1, $xDate2)
     {
         $oDate1 = static::createDate($xDate1);
         $oDate2 = static::createDate($xDate2);
@@ -286,7 +284,7 @@ class Chrono
      *
      * @return bool
      */
-    static public function between($xComparedDate, $xDate1, $xDate2, $bInclude = true)
+    public static function between($xComparedDate, $xDate1, $xDate2, $bInclude = true)
     {
         $oComparedDate = static::createDate($xComparedDate);
         $oDate1 = static::createDate($xDate1);

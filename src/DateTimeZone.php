@@ -13,7 +13,7 @@ namespace avadim\Chrono;
  */
 class DateTimeZone extends \DateTimeZone
 {
-    static public function create($xDateTimeZone = null)
+    public static function create($xDateTimeZone = null)
     {
         if (null === $xDateTimeZone) {
             $xDateTimeZone = date_default_timezone_get();

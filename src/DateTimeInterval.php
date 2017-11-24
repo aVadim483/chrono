@@ -29,13 +29,15 @@ class DateTimeInterval
      *
      * @param $sInterval
      * @param null $sBaseDate
+     *
+     * @throws \Exception
      */
     public function __construct($sInterval, $sBaseDate = null)
     {
         try {
             if (is_numeric($sInterval)) {
                 $this->oDT = new \DateInterval('PT' . $sInterval . 'S');
-            } elseif (is_string($sInterval) && $sInterval[0] == 'P') {
+            } elseif (is_string($sInterval) && $sInterval[0] === 'P') {
                 $this->oDT = new \DateInterval($sInterval);
             } else {
                 $this->oDT = \DateInterval::createFromDateString($sInterval);
@@ -54,7 +56,7 @@ class DateTimeInterval
      * @param   string  $sInterval
      * @return  string
      */
-    static public function normalize($sInterval)
+    public static function normalize($sInterval)
     {
         $sResult = '';
         if (preg_match('/P(?P<y>\d+Y)?(?P<m>\d+M)?(?P<w>\d+W)?(?P<d>\d+D)?(T)?(?P<th>\d+H)?(?P<tm>\d+M)?(?P<ti>\d+I)?(?P<ts>\d+S)?/', $sInterval, $aM)) {

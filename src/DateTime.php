@@ -127,9 +127,9 @@ class DateTime extends \DateTime
      * @param string $sDateTime
      * @param \DateTimeZone $xDateTimeZone
      *
-     * @return bool|\DateTime
+     * @return DateTime
      */
-    static public function createFromFormat($sFormat, $sDateTime, $xDateTimeZone = null)
+    public static function createFromFormat($sFormat, $sDateTime, $xDateTimeZone = null)
     {
         $oDateTime = parent::createFromFormat($sFormat, $sDateTime, DateTimeZone::create($xDateTimeZone));
 
@@ -213,17 +213,20 @@ class DateTime extends \DateTime
     }
 
     /**
-     * @param int    $iIntervalValue
+     * @param int $iIntervalValue
      * @param string $sIntervalSymbol
      *
      * @return $this|static
+     *
+     * @throws \Exception
      */
     private function addInterval($iIntervalValue, $sIntervalSymbol)
     {
         $iIntervalValue = (int)$iIntervalValue;
         if ($iIntervalValue > 0) {
             return $this->add(new \DateInterval('P' . $iIntervalValue . $sIntervalSymbol));
-        } elseif ($iIntervalValue < 0) {
+        }
+        if ($iIntervalValue < 0) {
             return $this->sub(new \DateInterval('P' . -$iIntervalValue . $sIntervalSymbol));
         }
         return $this;
