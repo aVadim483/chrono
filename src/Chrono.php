@@ -18,6 +18,8 @@ class Chrono
      * @param string $sBaseDate
      *
      * @return DateTimeInterval
+     *
+     * @throws \Exception
      */
     public static function createInterval($sInterval, $sBaseDate = null)
     {
@@ -135,6 +137,8 @@ class Chrono
      * @param string $sBaseDate
      *
      * @return float
+     *
+     * @throws \Exception
      */
     static private function calcTotal($sMethod, $sInterval, $sBaseDate = null)
     {
@@ -153,10 +157,12 @@ class Chrono
     /**
      * Преобразует интервал в число секунд
      *
-     * @param string $sInterval  - значение интервала по спецификации ISO 8601 или в человекочитаемом виде
+     * @param string $sInterval - значение интервала по спецификации ISO 8601 или в человекочитаемом виде
      * @param string $sBaseDate
      *
      * @return  int
+     *
+     * @throws \Exception
      */
     public static function totalSeconds($sInterval, $sBaseDate = null)
     {
@@ -170,6 +176,8 @@ class Chrono
      * @param string $sBaseDate
      *
      * @return  int
+     *
+     * @throws \Exception
      */
     public static function totalMinutes($sInterval, $sBaseDate = null)
     {
@@ -183,6 +191,8 @@ class Chrono
      * @param string $sBaseDate
      *
      * @return  int
+     *
+     * @throws \Exception
      */
     public static function totalHours($sInterval, $sBaseDate = null)
     {
@@ -196,6 +206,8 @@ class Chrono
      * @param string $sBaseDate
      *
      * @return  int
+     *
+     * @throws \Exception
      */
     public static function totalDays($sInterval, $sBaseDate = null)
     {
@@ -208,6 +220,8 @@ class Chrono
      * @param string $sFormat
      *
      * @return string
+     *
+     * @throws \Exception
      */
     public static function dateAddFormat($sDate, $sInterval, $sFormat = 'Y-m-d H:i:s')
     {
@@ -224,6 +238,8 @@ class Chrono
      * @param string $sFormat
      *
      * @return string
+     *
+     * @throws \Exception
      */
     public static function dateSubFormat($sDate, $sInterval, $sFormat = 'Y-m-d H:i:s')
     {

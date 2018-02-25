@@ -236,6 +236,8 @@ class DateTime extends \DateTime
      * @param int $iYears
      *
      * @return static
+     *
+     * @throws \Exception
      */
     public function addYears($iYears)
     {
@@ -246,6 +248,8 @@ class DateTime extends \DateTime
      * @param int $iYears
      *
      * @return static
+     *
+     * @throws \Exception
      */
     public function subYears($iYears)
     {
@@ -256,6 +260,8 @@ class DateTime extends \DateTime
      * @param int $iYear
      *
      * @return static
+     *
+     * @throws \Exception
      */
     public function setYear($iYear)
     {
@@ -266,6 +272,8 @@ class DateTime extends \DateTime
      * @param int $iMonths
      *
      * @return static
+     *
+     * @throws \Exception
      */
     public function addMonths($iMonths)
     {
@@ -276,6 +284,8 @@ class DateTime extends \DateTime
      * @param int $iMonths
      *
      * @return static
+     *
+     * @throws \Exception
      */
     public function subMonths($iMonths)
     {
@@ -286,6 +296,8 @@ class DateTime extends \DateTime
      * @param int $iMonth
      *
      * @return static
+     *
+     * @throws \Exception
      */
     public function setMonth($iMonth)
     {
@@ -296,6 +308,8 @@ class DateTime extends \DateTime
      * @param int $iDays
      *
      * @return static
+     *
+     * @throws \Exception
      */
     public function addDays($iDays)
     {
@@ -306,6 +320,8 @@ class DateTime extends \DateTime
      * @param int $iDays
      *
      * @return static
+     *
+     * @throws \Exception
      */
     public function subDays($iDays)
     {
@@ -316,6 +332,8 @@ class DateTime extends \DateTime
      * @param int $iDay
      *
      * @return static
+     *
+     * @throws \Exception
      */
     public function setDay($iDay)
     {
@@ -326,6 +344,8 @@ class DateTime extends \DateTime
      * @param $iHours
      *
      * @return static
+     *
+     * @throws \Exception
      */
     public function addHours($iHours)
     {
@@ -336,6 +356,8 @@ class DateTime extends \DateTime
      * @param int $iHours
      *
      * @return static
+     *
+     * @throws \Exception
      */
     public function subHours($iHours)
     {
@@ -346,6 +368,8 @@ class DateTime extends \DateTime
      * @param int $iHour
      *
      * @return static
+     *
+     * @throws \Exception
      */
     public function setHour($iHour)
     {
@@ -356,6 +380,8 @@ class DateTime extends \DateTime
      * @param $iMinutes
      *
      * @return static
+     *
+     * @throws \Exception
      */
     public function addMinutes($iMinutes)
     {
@@ -366,6 +392,8 @@ class DateTime extends \DateTime
      * @param int $iMinutes
      *
      * @return static
+     *
+     * @throws \Exception
      */
     public function subMinutes($iMinutes)
     {
@@ -376,6 +404,8 @@ class DateTime extends \DateTime
      * @param int $iMinutes
      *
      * @return static
+     *
+     * @throws \Exception
      */
     public function setMinute($iMinutes)
     {
@@ -386,6 +416,8 @@ class DateTime extends \DateTime
      * @param int $iSeconds
      *
      * @return static
+     *
+     * @throws \Exception
      */
     public function addSeconds($iSeconds)
     {
@@ -396,6 +428,8 @@ class DateTime extends \DateTime
      * @param int $iSeconds
      *
      * @return static
+     *
+     * @throws \Exception
      */
     public function subSeconds($iSeconds)
     {
@@ -406,6 +440,8 @@ class DateTime extends \DateTime
      * @param int $iSecond
      *
      * @return static
+     *
+     * @throws \Exception
      */
     public function setSecond($iSecond)
     {

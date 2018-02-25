@@ -54,6 +54,7 @@ class DateTimeInterval
      * Normalizes interval according by ISO 8601
      *
      * @param   string  $sInterval
+     *
      * @return  string
      */
     public static function normalize($sInterval)
@@ -68,7 +69,7 @@ class DateTimeInterval
             if (isset($aM['m'])) {
                 $sP .= $aM['m'];
             }
-            // не может быть использован совместно с D
+            // can not be used with D
             if (isset($aM['w']) && !isset($aM['d'])) {
                 $sP .= $aM['d'];
             }
@@ -81,7 +82,7 @@ class DateTimeInterval
             if (isset($aM['tm'])) {
                 $sT .= $aM['tm'];
             }
-            // нестандартный I заменяем на M
+            // non-standard I is replaced by M
             if (!isset($aM['tm']) && isset($aM['ti'])) {
                 $sT .= str_replace('I', 'M', $aM['ti']);
             }
@@ -113,18 +114,19 @@ class DateTimeInterval
      */
     public function totalSeconds($sBaseDate = null)
     {
+        $f = isset($this->oDT->f) ? $this->oDT->f : 0.0;
         if (null !== $sBaseDate || $this->sBaseDate) {
             $oDate1 = new \DateTimeImmutable($sBaseDate ?: $this->sBaseDate);
             $oDate2 = $oDate1->add($this->oDT);
             $oInterval = $oDate2->diff($oDate1);
-            return (int)$oInterval->format('%a') * self::P1D + $oInterval->h * self::PT1H + $oInterval->i * self::PT1M + $oInterval->s + $this->oDT->f;
+            return (int)$oInterval->format('%a') * self::P1D + $oInterval->h * self::PT1H + $oInterval->i * self::PT1M + $oInterval->s + $f;
         }
         return ($this->oDT->y * self::P1Y)
             + ($this->oDT->m * self::P1M)
             + ($this->oDT->d * self::P1D)
             + ($this->oDT->h * self::PT1H)
             + ($this->oDT->i * self::PT1M)
-            + $this->oDT->s + $this->oDT->f;
+            + $this->oDT->s + $f;
     }
 
     /**
