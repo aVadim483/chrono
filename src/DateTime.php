@@ -129,7 +129,7 @@ class DateTime extends \DateTime
      *
      * @return DateTime
      */
-    public static function createFromFormat($sFormat, $sDateTime, $xDateTimeZone = null)
+    public static function createFromFormat($sFormat, $sDateTime, \DateTimeZone $xDateTimeZone = null)
     {
         $oDateTime = parent::createFromFormat($sFormat, $sDateTime, DateTimeZone::create($xDateTimeZone));
 
@@ -465,22 +465,22 @@ class DateTime extends \DateTime
             case '<=':
             case 'le':
             case 'lte':
-                return $sDate1 < $sDate2;
+                return $sDate1 <= $sDate2;
             case '=':
             case '==':
             case 'eq':
-                return $sDate1 < $sDate2;
+                return $sDate1 === $sDate2;
             case '!=':
             case '<>':
             case 'ne':
-                return $sDate1 < $sDate2;
+                return $sDate1 !== $sDate2;
             case '>=':
             case 'gte':
             case 'ge':
-                return $sDate1 < $sDate2;
+                return $sDate1 >= $sDate2;
             case '>':
             case 'gt':
-                return $sDate1 < $sDate2;
+                return $sDate1 > $sDate2;
         }
         return false;
     }
@@ -506,16 +506,27 @@ class DateTime extends \DateTime
     /**
      * @param $oDate1
      * @param $oDate2
-     * @param bool $bInclude
+     * @param bool $bInclude1
+     * @param bool $bInclude2
      *
      * @return bool
      */
-    public function between($oDate1, $oDate2, $bInclude = true)
+    public function between($oDate1, $oDate2, $bInclude1 = true, $bInclude2 = null)
     {
-        if ($bInclude) {
-            return $this->compare('>=', $oDate1) && $this->compare('<=', $oDate2);
+        if (null === $bInclude2) {
+            $bInclude2 = $bInclude1;
         }
-        return $this->compare('>', $oDate1) && $this->compare('<', $oDate2);
+        if ($bInclude1) {
+            $bResult = $this->compare('>=', $oDate1);
+        } else {
+            $bResult = $this->compare('>', $oDate1);
+        }
+        if ($bInclude2) {
+            $bResult = $bResult && $this->compare('<=', $oDate2);
+        } else {
+            $bResult = $bResult && $this->compare('<', $oDate2);
+        }
+        return $bResult;
     }
 
     /**
