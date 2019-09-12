@@ -40,11 +40,19 @@ class DateTimePeriod
     {
         $aSequence = [];
         $oDate = clone $this->oDate1;
+        $xKey = -1;
         do {
             if ($sFormat) {
-                $oDate->setDefaultFormat($sFormat);
+                if ($sFormat === 'YQ') {
+                    $xKey = $oDate->format('Y');
+                    $xKey .= 'Q' . ((int)floor(($oDate->getMonth() - 1)/ 3) + 1);
+                } else {
+                    $xKey = $oDate->format($sFormat);
+                }
+            } else {
+                $xKey++;
             }
-            $aSequence[] = $oDate;
+            $aSequence[$xKey] = $oDate;
             $oDate = clone $oDate;
             $oDate->modify($sPeriod);
         } while($oDate->compare('<=', $this->oDate2));
@@ -57,7 +65,7 @@ class DateTimePeriod
      */
     public function sequenceOfSeconds()
     {
-        return $this->sequenceOf('+1 second');
+        return $this->sequenceOf('+1 second', 'Y-m-d H:m:s');
     }
 
     /**
@@ -65,7 +73,7 @@ class DateTimePeriod
      */
     public function sequenceOfMinutes()
     {
-        return $this->sequenceOf('+1 minute');
+        return $this->sequenceOf('+1 minute', 'Y-m-d H:m');
     }
 
     /**
@@ -73,7 +81,7 @@ class DateTimePeriod
      */
     public function sequenceOfHours()
     {
-        return $this->sequenceOf('+1 hour');
+        return $this->sequenceOf('+1 hour', 'Y-m-d H');
     }
 
     /**
@@ -81,7 +89,7 @@ class DateTimePeriod
      */
     public function sequenceOfDays()
     {
-        return $this->sequenceOf('+1 day');
+        return $this->sequenceOf('+1 day', 'Y-m-d');
     }
 
     /**
@@ -89,7 +97,7 @@ class DateTimePeriod
      */
     public function sequenceOfWeeks()
     {
-        return $this->sequenceOf('+7 days');
+        return $this->sequenceOf('+7 days', 'Y\WW');
     }
 
     /**
@@ -97,7 +105,7 @@ class DateTimePeriod
      */
     public function sequenceOfMonths()
     {
-        return $this->sequenceOf('+1 month');
+        return $this->sequenceOf('+1 month', 'Y-m');
     }
 
     /**
