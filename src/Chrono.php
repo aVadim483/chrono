@@ -14,33 +14,51 @@ namespace avadim\Chrono;
 class Chrono
 {
     /**
-     * @param string $sInterval
+     * @param mixed $xInterval
      * @param string $sBaseDate
      *
      * @return DateTimeInterval
      *
      * @throws \Exception
      */
-    public static function createInterval($sInterval, $sBaseDate = null)
+    public static function createInterval($xInterval, $sBaseDate = null)
     {
-        return new DateTimeInterval($sInterval, $sBaseDate);
+        if ($xInterval instanceof DateTimeInterval) {
+            return $xInterval;
+        }
+        return new DateTimeInterval($xInterval, $sBaseDate);
     }
 
     /**
-     * @param string $sDateTime
+     * @param mixed $xDateTime
      * @param \DateTimeZone|string $xDateTimeZone
      *
      * @return DateTime
+     *
+     * @throws \Exception
      */
-    public static function createDate($sDateTime, $xDateTimeZone = null)
+    public static function createDate($xDateTime = 'now', $xDateTimeZone = null)
     {
-        return new DateTime($sDateTime, $xDateTimeZone);
+        if ($xDateTime instanceof \DateTime) {
+            $sDateTime = $xDateTime->format('Y-m-d H:i:s.u O');
+        } elseif (!is_numeric($xDateTime)) {
+            $sDateTime = (string)$xDateTime;
+        } else {
+            $sDateTime = $xDateTime;
+        }
+        $oDate = new DateTime($sDateTime);
+        if (null !== $xDateTimeZone) {
+            $oDate->setTimezone(DateTimeZone::create($xDateTimeZone));
+        }
+        return $oDate;
     }
 
     /**
      * @param \DateTimeZone|string $xDateTimeZone
      *
      * @return DateTime
+     *
+     * @throws \Exception
      */
     public static function now($xDateTimeZone = null)
     {
@@ -51,6 +69,8 @@ class Chrono
      * @param \DateTimeZone|string $xDateTimeZone
      *
      * @return DateTime
+     *
+     * @throws \Exception
      */
     public static function today($xDateTimeZone = null)
     {
@@ -67,6 +87,8 @@ class Chrono
      * @param \DateTimeZone|string $sTimeZone
      *
      * @return DateTime
+     *
+     * @throws \Exception
      */
     public static function createFrom($iYear, $iMonth = null, $iDay = null, $iHour = null, $iMinute = null, $iSecond = null, $sTimeZone = null)
     {
@@ -101,6 +123,8 @@ class Chrono
      * @param \DateTimeZone|string $sTimeZone
      *
      * @return DateTime
+     *
+     * @throws \Exception
      */
     public static function createFromDate($iYear, $iMonth = null, $iDay = null, $sTimeZone = null)
     {
@@ -114,6 +138,8 @@ class Chrono
      * @param \DateTimeZone|string $sTimeZone
      *
      * @return DateTime
+     *
+     * @throws \Exception
      */
     public static function createFromTime($iHour = null, $iMinute = null, $iSecond = null, $sTimeZone = null)
     {
@@ -125,6 +151,8 @@ class Chrono
      * @param $xDate2
      *
      * @return DateTimePeriod
+     *
+     * @throws \Exception
      */
     public static function createPeriod($xDate1, $xDate2)
     {
@@ -140,7 +168,7 @@ class Chrono
      *
      * @throws \Exception
      */
-    static private function calcTotal($sMethod, $sInterval, $sBaseDate = null)
+    private static function calcTotal($sMethod, $sInterval, $sBaseDate = null)
     {
         if (is_numeric($sInterval)) {
             return (float)$sInterval;
@@ -223,13 +251,16 @@ class Chrono
      *
      * @throws \Exception
      */
-    public static function dateAddFormat($sDate, $sInterval, $sFormat = 'Y-m-d H:i:s')
+    public static function dateAddFormat($sDate, $sInterval, $sFormat = null)
     {
         $oDate = static::createDate($sDate);
         $oInterval = static::createInterval($sInterval);
         $oDate->add($oInterval->interval());
 
-        return $oDate->format($sFormat);
+        if (null !== $sFormat) {
+            return $oDate->format($sFormat);
+        }
+        return (string)$oDate;
     }
 
     /**
@@ -241,13 +272,16 @@ class Chrono
      *
      * @throws \Exception
      */
-    public static function dateSubFormat($sDate, $sInterval, $sFormat = 'Y-m-d H:i:s')
+    public static function dateSubFormat($sDate, $sInterval, $sFormat = null)
     {
         $oDate = static::createDate($sDate);
         $oInterval = static::createInterval($sInterval);
         $oDate->sub($oInterval->interval());
 
-        return $oDate->format($sFormat);
+        if (null !== $sFormat) {
+            return $oDate->format($sFormat);
+        }
+        return (string)$oDate;
     }
 
     /**
@@ -255,12 +289,54 @@ class Chrono
      * @param string $sDate2
      *
      * @return int
+     *
+     * @throws \Exception
      */
     public static function dateDiffSeconds($sDate1, $sDate2)
     {
         $oDate1 = static::createDate($sDate1);
         $oDate2 = static::createDate($sDate2);
+
         return $oDate2->getTimestamp() - $oDate1->getTimestamp();
+    }
+
+    /**
+     * @param string $sDate1
+     * @param string $sDate2
+     *
+     * @return int
+     *
+     * @throws \Exception
+     */
+    public static function dateDiffMinutes($sDate1, $sDate2)
+    {
+        return (int)floor(self::dateDiffSeconds($sDate1, $sDate2) / DateTimeInterval::PT1M);
+    }
+
+    /**
+     * @param string $sDate1
+     * @param string $sDate2
+     *
+     * @return int
+     *
+     * @throws \Exception
+     */
+    public static function dateDiffHours($sDate1, $sDate2)
+    {
+        return (int)floor(self::dateDiffSeconds($sDate1, $sDate2) / DateTimeInterval::PT1H);
+    }
+
+    /**
+     * @param string $sDate1
+     * @param string $sDate2
+     *
+     * @return int
+     *
+     * @throws \Exception
+     */
+    public static function dateDiffDays($sDate1, $sDate2)
+    {
+        return (int)floor(self::dateDiffSeconds($sDate1, $sDate2) / DateTimeInterval::P1D);
     }
 
     /**
@@ -269,6 +345,8 @@ class Chrono
      * @param $xDate2
      *
      * @return bool
+     *
+     * @throws \Exception
      */
     public static function compare($xDate1, $sOperator, $xDate2)
     {
@@ -283,6 +361,8 @@ class Chrono
      * @param $xDate2
      *
      * @return int
+     *
+     * @throws \Exception
      */
     public static function compareWidth($xDate1, $xDate2)
     {
@@ -299,6 +379,8 @@ class Chrono
      * @param bool $bInclude
      *
      * @return bool
+     *
+     * @throws \Exception
      */
     public static function between($xComparedDate, $xDate1, $xDate2, $bInclude = true)
     {

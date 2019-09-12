@@ -13,6 +13,11 @@ namespace avadim\Chrono;
  */
 class DateTimeZone extends \DateTimeZone
 {
+    /**
+     * @param mixed $xDateTimeZone
+     *
+     * @return DateTimeZone
+     */
     public static function create($xDateTimeZone = null)
     {
         if (null === $xDateTimeZone) {

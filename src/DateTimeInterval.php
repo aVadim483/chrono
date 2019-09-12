@@ -25,7 +25,7 @@ class DateTimeInterval
     protected $oDT;
 
     /**
-     * DateTimeInterval constructor.
+     * DateTimeInterval constructor
      *
      * @param $sInterval
      * @param null $sBaseDate
@@ -42,7 +42,7 @@ class DateTimeInterval
             } else {
                 $this->oDT = \DateInterval::createFromDateString($sInterval);
             }
-        } catch (\RuntimeException $oE) {
+        } catch (\Exception $oE) {
             $this->oDT = new \DateInterval(self::normalize($sInterval));
         }
         if ($sBaseDate) {
@@ -60,7 +60,7 @@ class DateTimeInterval
     public static function normalize($sInterval)
     {
         $sResult = '';
-        if (preg_match('/P(?P<y>\d+Y)?(?P<m>\d+M)?(?P<w>\d+W)?(?P<d>\d+D)?(T)?(?P<th>\d+H)?(?P<tm>\d+M)?(?P<ti>\d+I)?(?P<ts>\d+S)?/', $sInterval, $aM)) {
+        if (preg_match('/P(?P<y>\d+Y)?(?P<m>\d+M)?(?P<w>\d+W)?(?P<d>\d+D)?(T)?(?P<th>\d+H)?(?P<tm>\d+M)?(?P<ti>\d+I)?(?P<ts>\d+S)?/i', $sInterval, $aM)) {
             $sP = '';
             $sT = '';
             if (isset($aM['y'])) {
@@ -100,7 +100,7 @@ class DateTimeInterval
             }
         }
         if ($sResult) {
-            return $sResult;
+            return strtoupper($sResult);
         }
         return 'PT0S';
     }
@@ -108,18 +108,20 @@ class DateTimeInterval
     /**
      * Get total seconds of interval
      *
-     * @param null $sBaseDate
+     * @param string $sBaseDate
      *
      * @return float
+     *
+     * @throws \Exception
      */
-    public function totalSeconds($sBaseDate = null)
+    public function totalTime($sBaseDate = null)
     {
         $f = isset($this->oDT->f) ? $this->oDT->f : 0.0;
         if (null !== $sBaseDate || $this->sBaseDate) {
             $oDate1 = new \DateTimeImmutable($sBaseDate ?: $this->sBaseDate);
             $oDate2 = $oDate1->add($this->oDT);
             $oInterval = $oDate2->diff($oDate1);
-            return (int)$oInterval->format('%a') * self::P1D + $oInterval->h * self::PT1H + $oInterval->i * self::PT1M + $oInterval->s + $f;
+            return (float)$oInterval->format('%a') * self::P1D + $oInterval->h * self::PT1H + $oInterval->i * self::PT1M + $oInterval->s + $f;
         }
         return ($this->oDT->y * self::P1Y)
             + ($this->oDT->m * self::P1M)
@@ -130,15 +132,31 @@ class DateTimeInterval
     }
 
     /**
+     * Get total seconds of interval
+     *
+     * @param string $sBaseDate
+     *
+     * @return int
+     *
+     * @throws \Exception
+     */
+    public function totalSeconds($sBaseDate = null)
+    {
+        return (int)floor($this->totalTime($sBaseDate));
+    }
+
+    /**
      * Get total minutes of interval
      *
      * @param null $sBaseDate
      *
-     * @return float
+     * @return int
+     *
+     * @throws \Exception
      */
     public function totalMinutes($sBaseDate = null)
     {
-        return floor($this->totalSeconds($sBaseDate) / self::PT1M);
+        return (int)floor($this->totalSeconds($sBaseDate) / self::PT1M);
     }
 
     /**
@@ -146,11 +164,13 @@ class DateTimeInterval
      *
      * @param null $sBaseDate
      *
-     * @return float
+     * @return int
+     *
+     * @throws \Exception
      */
     public function totalHours($sBaseDate = null)
     {
-        return floor($this->totalSeconds($sBaseDate) / self::PT1H);
+        return (int)floor($this->totalSeconds($sBaseDate) / self::PT1H);
     }
 
     /**
@@ -158,11 +178,13 @@ class DateTimeInterval
      *
      * @param null $sBaseDate
      *
-     * @return float
+     * @return int
+     *
+     * @throws \Exception
      */
     public function totalDays($sBaseDate = null)
     {
-        return floor($this->totalSeconds($sBaseDate) / self::P1D);
+        return (int)floor($this->totalSeconds($sBaseDate) / self::P1D);
     }
 
     /**

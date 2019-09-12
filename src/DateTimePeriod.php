@@ -16,6 +16,14 @@ class DateTimePeriod
     protected $oDate1;
     protected $oDate2;
 
+    /**
+     * DateTimePeriod constructor
+     *
+     * @param mixed $xDate1
+     * @param mixed $xDate2
+     *
+     * @throws \Exception
+     */
     public function __construct($xDate1, $xDate2)
     {
         $this->oDate1 = new DateTime($xDate1);
@@ -100,6 +108,13 @@ class DateTimePeriod
         return $this->sequenceOf('+3 months', 'YQ');
     }
 
+    /**
+     * @return array
+     */
+    public function sequenceOfYears()
+    {
+        return $this->sequenceOf('+1 year', 'Y');
+    }
 }
 
 // EOF

@@ -13,8 +13,16 @@ namespace avadim\Chrono;
  */
 class DateTime extends \DateTime
 {
-    protected $sDefaultFormat = 'Y-m-d H:i:s';
+    protected $sDefaultFormat = 'Y-m-d H:i:s.u O';
 
+    /**
+     * DateTime constructor
+     *
+     * @param string $sDateTime
+     * @param null $xDateTimeZone
+     *
+     * @throws \Exception
+     */
     public function __construct($sDateTime = 'now', $xDateTimeZone = null)
     {
         parent::__construct($sDateTime, DateTimeZone::create($xDateTimeZone));
@@ -125,11 +133,13 @@ class DateTime extends \DateTime
     /**
      * @param string $sFormat
      * @param string $sDateTime
-     * @param \DateTimeZone $xDateTimeZone
+     * @param mixed $xDateTimeZone
      *
      * @return DateTime
+     *
+     * @throws \Exception
      */
-    public static function createFromFormat($sFormat, $sDateTime, \DateTimeZone $xDateTimeZone = null)
+    public static function createFromFormat($sFormat, $sDateTime, $xDateTimeZone = null)
     {
         $oDateTime = parent::createFromFormat($sFormat, $sDateTime, DateTimeZone::create($xDateTimeZone));
 
@@ -191,7 +201,7 @@ class DateTime extends \DateTime
     /**
      * @return int
      */
-    public function getHour()
+    public function getHours()
     {
         return (int)$this->format('H');
     }
@@ -199,7 +209,7 @@ class DateTime extends \DateTime
     /**
      * @return int
      */
-    public function getMinute()
+    public function getMinutes()
     {
         return (int)$this->format('i');
     }
@@ -207,49 +217,91 @@ class DateTime extends \DateTime
     /**
      * @return int
      */
-    public function getSecond()
+    public function getSeconds()
     {
         return (int)$this->format('s');
     }
 
     /**
-     * @param int $iIntervalValue
+     * @return string
+     */
+    public function getTimeZoneNum()
+    {
+        $iSeconds = $this->getOffset();
+        $iHours = (int)floor($iSeconds / DateTimeInterval::PT1H);
+        $iMinutes = $iSeconds - $iHours * DateTimeInterval::PT1H;
+
+        return $iHours . (($iMinutes < 10) ? '0' . $iMinutes : $iMinutes);
+    }
+
+    /**
+     * Returns local time (timestamp)
+     *
+     * @return int
+     */
+    public function getTime()
+    {
+        return $this->getTimestamp() + $this->getOffset();
+    }
+
+    /**
+     * @param mixed $xInterval
+     * @param string $sIntervalName
+     *
+     * @return $this
+     */
+    private function addInterval($xInterval, $sIntervalName = null)
+    {
+        $sInterval = $xInterval;
+        if ($sIntervalName) {
+            $sInterval .= ' ' . $sIntervalName;
+        }
+        /*
+        if ($sIntervalName === 'months') {
+            $i = \DateInterval::createFromDateString($sInterval);
+            $i = new \DateInterval('P3M');
+            $this->sub($i);
+            return $this;
+        }
+        */
+        return $this->add(\DateInterval::createFromDateString($sInterval));
+    }
+
+    /**
+     * @param mixed $xInterval
      * @param string $sIntervalSymbol
      *
-     * @return $this|static
-     *
-     * @throws \Exception
+     * @return $this
      */
-    private function addInterval($iIntervalValue, $sIntervalSymbol)
+    private function subInterval($xInterval, $sIntervalSymbol = null)
     {
-        $iIntervalValue = (int)$iIntervalValue;
-        if ($iIntervalValue > 0) {
-            return $this->add(new \DateInterval('P' . $iIntervalValue . $sIntervalSymbol));
+        if (null === $sIntervalSymbol) {
+            if (0 === strpos($xInterval, 'PT')) {
+                $xInterval = substr($xInterval, 2, -1);
+            } elseif (0 === strpos($xInterval, 'P')) {
+                $xInterval = substr($xInterval, 1, -1);
+            }
+            $sIntervalSymbol = substr($xInterval, -1);
+        } else {
+            $xInterval = -(int)$xInterval;
         }
-        if ($iIntervalValue < 0) {
-            return $this->sub(new \DateInterval('P' . -$iIntervalValue . $sIntervalSymbol));
-        }
-        return $this;
+        return $this->addInterval($xInterval, $sIntervalSymbol);
     }
 
     /**
      * @param int $iYears
      *
-     * @return static
-     *
-     * @throws \Exception
+     * @return $this
      */
     public function addYears($iYears)
     {
-        return $this->addInterval($iYears, 'Y');
+        return $this->addInterval($iYears, 'years');
     }
 
     /**
      * @param int $iYears
      *
-     * @return static
-     *
-     * @throws \Exception
+     * @return $this
      */
     public function subYears($iYears)
     {
@@ -257,35 +309,19 @@ class DateTime extends \DateTime
     }
 
     /**
-     * @param int $iYear
-     *
-     * @return static
-     *
-     * @throws \Exception
-     */
-    public function setYear($iYear)
-    {
-        return $this->addYears($iYear - $this->getYear());
-    }
-
-    /**
      * @param int $iMonths
      *
-     * @return static
-     *
-     * @throws \Exception
+     * @return $this
      */
     public function addMonths($iMonths)
     {
-        return $this->addInterval($iMonths, 'n');
+        return $this->addInterval($iMonths, 'months');
     }
 
     /**
      * @param int $iMonths
      *
-     * @return static
-     *
-     * @throws \Exception
+     * @return $this
      */
     public function subMonths($iMonths)
     {
@@ -293,35 +329,19 @@ class DateTime extends \DateTime
     }
 
     /**
-     * @param int $iMonth
-     *
-     * @return static
-     *
-     * @throws \Exception
-     */
-    public function setMonth($iMonth)
-    {
-        return $this->addMonths($iMonth - $this->getMonth());
-    }
-
-    /**
      * @param int $iDays
      *
-     * @return static
-     *
-     * @throws \Exception
+     * @return $this
      */
     public function addDays($iDays)
     {
-        return $this->addInterval($iDays, 'j');
+        return $this->addInterval($iDays, 'days');
     }
 
     /**
      * @param int $iDays
      *
-     * @return static
-     *
-     * @throws \Exception
+     * @return $this
      */
     public function subDays($iDays)
     {
@@ -329,35 +349,19 @@ class DateTime extends \DateTime
     }
 
     /**
-     * @param int $iDay
-     *
-     * @return static
-     *
-     * @throws \Exception
-     */
-    public function setDay($iDay)
-    {
-        return $this->addDays($iDay - $this->getDay());
-    }
-
-    /**
      * @param $iHours
      *
-     * @return static
-     *
-     * @throws \Exception
+     * @return $this
      */
     public function addHours($iHours)
     {
-        return $this->addInterval($iHours, 'H');
+        return $this->addInterval($iHours, 'hours');
     }
 
     /**
      * @param int $iHours
      *
-     * @return static
-     *
-     * @throws \Exception
+     * @return $this
      */
     public function subHours($iHours)
     {
@@ -367,33 +371,27 @@ class DateTime extends \DateTime
     /**
      * @param int $iHour
      *
-     * @return static
-     *
-     * @throws \Exception
+     * @return $this
      */
-    public function setHour($iHour)
+    public function setHours($iHour)
     {
-        return $this->addHours($iHour - $this->getHour());
+        return $this->addHours($iHour - $this->getHours());
     }
 
     /**
      * @param $iMinutes
      *
-     * @return static
-     *
-     * @throws \Exception
+     * @return $this
      */
     public function addMinutes($iMinutes)
     {
-        return $this->addInterval($iMinutes, 'i');
+        return $this->addInterval($iMinutes, 'minutes');
     }
 
     /**
      * @param int $iMinutes
      *
-     * @return static
-     *
-     * @throws \Exception
+     * @return $this
      */
     public function subMinutes($iMinutes)
     {
@@ -403,33 +401,27 @@ class DateTime extends \DateTime
     /**
      * @param int $iMinutes
      *
-     * @return static
-     *
-     * @throws \Exception
+     * @return $this
      */
-    public function setMinute($iMinutes)
+    public function setMinutes($iMinutes)
     {
-        return $this->addDays($iMinutes - $this->getMinute());
+        return $this->addMinutes($iMinutes - $this->getMinutes());
     }
 
     /**
      * @param int $iSeconds
      *
-     * @return static
-     *
-     * @throws \Exception
+     * @return $this
      */
     public function addSeconds($iSeconds)
     {
-        return $this->addInterval($iSeconds, 's');
+        return $this->addInterval($iSeconds, 'seconds');
     }
 
     /**
      * @param int $iSeconds
      *
-     * @return static
-     *
-     * @throws \Exception
+     * @return $this
      */
     public function subSeconds($iSeconds)
     {
@@ -439,13 +431,11 @@ class DateTime extends \DateTime
     /**
      * @param int $iSecond
      *
-     * @return static
-     *
-     * @throws \Exception
+     * @return $this
      */
-    public function setSecond($iSecond)
+    public function setSeconds($iSecond)
     {
-        return $this->addDays($iSecond - $this->getSecond());
+        return $this->addSeconds($iSecond - $this->getSeconds());
     }
 
     /**
@@ -456,31 +446,31 @@ class DateTime extends \DateTime
      */
     public function compare($sOperator, $oDate)
     {
-        $sDate1 = $this->format('Y-m-d H:i:s');
-        $sDate2 = $oDate->format('Y-m-d H:i:s');
+        $iTime1 = $this->getTimestamp();
+        $iTime2 = $oDate->getTimestamp();
         switch ($sOperator) {
             case '<':
             case 'lt':
-                return $sDate1 < $sDate2;
+                return $iTime1 < $iTime2;
             case '<=':
             case 'le':
             case 'lte':
-                return $sDate1 <= $sDate2;
+                return $iTime1 <= $iTime2;
             case '=':
             case '==':
             case 'eq':
-                return $sDate1 === $sDate2;
+                return $iTime1 === $iTime2;
             case '!=':
             case '<>':
             case 'ne':
-                return $sDate1 !== $sDate2;
+                return $iTime1 !== $iTime2;
             case '>=':
             case 'gte':
             case 'ge':
-                return $sDate1 >= $sDate2;
+                return $iTime1 >= $iTime2;
             case '>':
             case 'gt':
-                return $sDate1 > $sDate2;
+                return $iTime1 > $iTime2;
         }
         return false;
     }
@@ -492,13 +482,13 @@ class DateTime extends \DateTime
      */
     public function compareWidth($oDate)
     {
-        $sDate1 = $this->format('Y-m-d H:i:s');
-        $sDate2 = $oDate->format('Y-m-d H:i:s');
-        if ($sDate1 < $sDate2) {
-            return -1;
-        }
-        if ($sDate1 > $sDate2) {
+        $iTime1 = $this->getTimestamp();
+        $iTime2 = $oDate->getTimestamp();
+        if ($iTime1 < $iTime2) {
             return 1;
+        }
+        if ($iTime1 > $iTime2) {
+            return -1;
         }
         return 0;
     }
@@ -530,11 +520,11 @@ class DateTime extends \DateTime
     }
 
     /**
-     * @return int
+     * @return bool
      */
     public function isLeapYear()
     {
-        return (int)$this->format('L');
+        return (bool)$this->format('L');
     }
 
 }
