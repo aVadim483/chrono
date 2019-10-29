@@ -13,7 +13,7 @@ namespace avadim\Chrono;
  */
 class Chrono
 {
-    protected static $sDefaultFormat = 'Y-m-d H:i:s';
+    public static $sDefaultFormat = 'Y-m-d H:i:s';
 
     /**
      * @param mixed $xInterval
