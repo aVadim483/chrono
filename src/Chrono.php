@@ -254,6 +254,23 @@ class Chrono
     /**
      * @param string $sDate
      * @param string $sInterval
+     *
+     * @return DateTime
+     *
+     * @throws \Exception
+     */
+    public static function dateAdd($sDate, $sInterval)
+    {
+        $oDate = static::createDate($sDate);
+        $oInterval = static::createInterval($sInterval);
+        $oDate->add($oInterval->interval());
+
+        return $oDate;
+    }
+
+    /**
+     * @param string $sDate
+     * @param string $sInterval
      * @param string $sFormat
      *
      * @return string
@@ -262,14 +279,28 @@ class Chrono
      */
     public static function dateAddFormat($sDate, $sInterval, $sFormat = null)
     {
-        $oDate = static::createDate($sDate);
-        $oInterval = static::createInterval($sInterval);
-        $oDate->add($oInterval->interval());
-
+        $oDate = static::dateAdd($sDate, $sInterval);
         if (null !== $sFormat) {
             return $oDate->format($sFormat);
         }
         return (string)$oDate;
+    }
+
+    /**
+     * @param string $sDate
+     * @param string $sInterval
+     *
+     * @return DateTime
+     *
+     * @throws \Exception
+     */
+    public static function dateSub($sDate, $sInterval)
+    {
+        $oDate = static::createDate($sDate);
+        $oInterval = static::createInterval($sInterval);
+        $oDate->sub($oInterval->interval());
+
+        return $oDate;
     }
 
     /**
@@ -283,10 +314,7 @@ class Chrono
      */
     public static function dateSubFormat($sDate, $sInterval, $sFormat = null)
     {
-        $oDate = static::createDate($sDate);
-        $oInterval = static::createInterval($sInterval);
-        $oDate->sub($oInterval->interval());
-
+        $oDate = static::dateSub($sDate, $sInterval);
         if (null !== $sFormat) {
             return $oDate->format($sFormat);
         }

@@ -40,8 +40,8 @@ class TestChrono extends TestCase
         $this->assertEquals(strcmp($oDate1->getTimeZoneNum(), $oDate2->getTimeZoneNum()), Chrono::compareWidth($oDate1, $oDate2));
         $this->assertSame($oNow->getTime(), $oDate3->getTime());
 
-        $this->assertSame(Chrono::dateDiffSeconds($oNow, Chrono::dateAddFormat($oNow, $oInterval1)), 100);
-        $this->assertSame(Chrono::dateDiffMinutes($oNow, Chrono::dateSubFormat($oNow, 'PT120s')), -2);
+        $this->assertSame(Chrono::dateDiffSeconds($oNow, Chrono::dateAdd($oNow, $oInterval1)), 100);
+        $this->assertSame(Chrono::dateDiffMinutes($oNow, Chrono::dateSub($oNow, 'PT120s')), -2);
         $this->assertEquals($oInterval2->totalDays($oDate1), $oDate1->isLeapYear() ? 366 : 365);
         $this->assertCount($oNow->getYear() - 1999 + 1, Chrono::createPeriod(Chrono::createDate(1999), 'now')->sequenceOfYears());
         $this->assertInstanceOf(\avadim\Chrono\DateTime::class, $oNow);
