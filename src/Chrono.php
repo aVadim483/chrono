@@ -13,6 +13,8 @@ namespace avadim\Chrono;
  */
 class Chrono
 {
+    protected static $sDefaultFormat = 'Y-m-d H:i:s';
+
     /**
      * @param mixed $xInterval
      * @param string $sBaseDate
@@ -47,6 +49,7 @@ class Chrono
             $sDateTime = $xDateTime;
         }
         $oDate = new DateTime($sDateTime);
+        $oDate->setDefaultFormat(self::$sDefaultFormat);
         if (null !== $xDateTimeZone) {
             $oDate->setTimezone(DateTimeZone::create($xDateTimeZone));
         }
@@ -109,11 +112,14 @@ class Chrono
             (null !== $iYear) ? $iYear : $oDate->getYear(),
             (null !== $iMonth) ? $iMonth : $oDate->getMonth(),
             (null !== $iDay) ? $iDay : $oDate->getDay(),
-            (null !== $iHour) ? $iHour : $oDate->getHour(),
-            (null !== $iMinute) ? $iMinute : $oDate->getMinute(),
-            (null !== $iSecond) ? $iSecond : $oDate->getSecond()
+            (null !== $iHour) ? $iHour : $oDate->getHours(),
+            (null !== $iMinute) ? $iMinute : $oDate->getMinutes(),
+            (null !== $iSecond) ? $iSecond : $oDate->getSeconds()
         );
-        return DateTime::createFromFormat('Y-m-d H:i:s', $sDateString, $oDate->getTimezone());
+        $oDateTime = DateTime::createFromFormat('Y-m-d H:i:s', $sDateString, $oDate->getTimezone());
+        $oDateTime->setDefaultFormat($oDate->getDefaultFormat());
+
+        return $oDateTime;
     }
 
     /**
@@ -156,7 +162,10 @@ class Chrono
      */
     public static function createPeriod($xDate1, $xDate2)
     {
-        return new DateTimePeriod($xDate1, $xDate2);
+        $oDate1 = self::createDate($xDate1);
+        $oDate2 = self::createDate($xDate2);
+
+        return new DateTimePeriod($oDate1, $oDate2);
     }
 
     /**

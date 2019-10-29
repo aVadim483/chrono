@@ -26,8 +26,16 @@ class DateTimePeriod
      */
     public function __construct($xDate1, $xDate2)
     {
-        $this->oDate1 = new DateTime($xDate1);
-        $this->oDate2 = new DateTime($xDate2);
+        if (is_object($xDate1) && $xDate1 instanceof DateTime) {
+            $this->oDate1 = $xDate1;
+        } else {
+            $this->oDate1 = new DateTime($xDate1);
+        }
+        if (is_object($xDate2) && $xDate2 instanceof DateTime) {
+            $this->oDate2 = $xDate2;
+        } else {
+            $this->oDate2 = new DateTime($xDate2);
+        }
     }
 
     /**

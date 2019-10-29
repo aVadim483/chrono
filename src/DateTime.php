@@ -159,6 +159,14 @@ class DateTime extends \DateTime
     }
 
     /**
+     * @return string
+     */
+    public function getDefaultFormat()
+    {
+        return $this->sDefaultFormat;
+    }
+
+    /**
      * @return int
      */
     public function getQuarter()
