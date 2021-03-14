@@ -14,21 +14,31 @@ namespace avadim\Chrono;
 class DateTimeZone extends \DateTimeZone
 {
     /**
-     * @param mixed $xDateTimeZone
+     * @param mixed $dateTimeZone
      *
      * @return DateTimeZone
      */
-    public static function create($xDateTimeZone = null)
+    public static function create($dateTimeZone = null)
     {
-        if (null === $xDateTimeZone) {
-            $xDateTimeZone = date_default_timezone_get();
-        } elseif (is_numeric($xDateTimeZone)) {
-            $xDateTimeZone = timezone_name_from_abbr(null, $xDateTimeZone * 3600, true);
-        } elseif ($xDateTimeZone instanceof \DateTimeZone) {
-            $xDateTimeZone = $xDateTimeZone->getName();
+        if (is_numeric($dateTimeZone)) {
+            return new static($dateTimeZone);
         }
-        return new static($xDateTimeZone);
+        if (null === $dateTimeZone) {
+            $dateTimeZone = date_default_timezone_get();
+        } elseif ($dateTimeZone instanceof \DateTimeZone) {
+            $dateTimeZone = $dateTimeZone->getName();
+        }
+        return new static($dateTimeZone);
     }
+
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->getName();
+    }
+
 }
 
 // EOF

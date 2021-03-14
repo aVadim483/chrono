@@ -13,19 +13,19 @@ namespace avadim\Chrono;
  */
 class DateTime extends \DateTime
 {
-    protected $sDefaultFormat = 'Y-m-d H:i:s.u O';
+    protected $defaultFormat = 'Y-m-d H:i:s.u O';
 
     /**
      * DateTime constructor
      *
-     * @param string $sDateTime
-     * @param null $xDateTimeZone
+     * @param string $dateTime
+     * @param mixed|null $dateTimeZone
      *
      * @throws \Exception
      */
-    public function __construct($sDateTime = 'now', $xDateTimeZone = null)
+    public function __construct($dateTime = 'now', $dateTimeZone = null)
     {
-        parent::__construct($sDateTime, DateTimeZone::create($xDateTimeZone));
+        parent::__construct($dateTime, DateTimeZone::create($dateTimeZone));
     }
 
     /**
@@ -41,26 +41,29 @@ class DateTime extends \DateTime
      */
     public function toString()
     {
-        return $this->format($this->sDefaultFormat);
+        return $this->format($this->defaultFormat);
     }
 
     /**
      * Format date using strftime() function
      *
-     * @param string $sFormat
+     * @param string $format
      *
      * @return string
      */
-    public function strFormat($sFormat)
+    public function strFormat($format)
     {
-        $sDate = strftime($sFormat, $this->getTimestamp());
-        if (false !== strpos($sFormat, '%q')) {
-            $sDate = str_replace('%q', $this->getQuarter(), $sDate);
+        $date = strftime($format, $this->getTimestamp());
+        if (false !== strpos($format, '%q')) {
+            $date = str_replace('%q', $this->getQuarter(), $date);
         }
-        return $sDate;
+
+        return $date;
     }
 
     /**
+     * Returns date as string with second precision
+     *
      * @return string
      */
     public function strSecond()
@@ -69,6 +72,8 @@ class DateTime extends \DateTime
     }
 
     /**
+     * Returns date as string with minute precision
+     *
      * @return string
      */
     public function strMinute()
@@ -77,6 +82,8 @@ class DateTime extends \DateTime
     }
 
     /**
+     * Returns date as string with hour precision
+     *
      * @return string
      */
     public function strHour()
@@ -85,6 +92,8 @@ class DateTime extends \DateTime
     }
 
     /**
+     * Returns date as string with day precision
+     *
      * @return string
      */
     public function strDay()
@@ -93,33 +102,35 @@ class DateTime extends \DateTime
     }
 
     /**
-     * @param string $sDelimiter
+     * Returns date as string with week precision as <year><delimiter><week>
+     *
+     * @param string $delimiter
      *
      * @return string
      */
-    public function strWeek($sDelimiter = 'W')
+    public function strWeek($delimiter = 'W')
     {
-        return $this->strFormat('%Y' . $sDelimiter . '%V');
+        return $this->strFormat('%Y' . $delimiter . '%V');
     }
 
     /**
-     * @param string $sDelimiter
+     * @param string $delimiter
      *
      * @return string
      */
-    public function strMonth($sDelimiter = '-')
+    public function strMonth($delimiter = '-')
     {
-        return $this->strFormat('%Y' . $sDelimiter . '%m');
+        return $this->strFormat('%Y' . $delimiter . '%m');
     }
 
     /**
-     * @param string $sDelimiter
+     * @param string $delimiter
      *
      * @return string
      */
-    public function strQuarter($sDelimiter = 'Q')
+    public function strQuarter($delimiter = 'Q')
     {
-        return (string)$this->getYear() . $sDelimiter . $this->getQuarter();
+        return (string)$this->getYear() . $delimiter . $this->getQuarter();
     }
 
     /**
@@ -131,29 +142,31 @@ class DateTime extends \DateTime
     }
 
     /**
-     * @param string $sFormat
-     * @param string $sDateTime
-     * @param mixed $xDateTimeZone
+     * Parses a time string according to a specified format
+     *
+     * @param string $format
+     * @param string $dateTime
+     * @param mixed|null $dateTimeZone
      *
      * @return DateTime
      *
      * @throws \Exception
      */
-    public static function createFromFormat($sFormat, $sDateTime, $xDateTimeZone = null)
+    public static function createFromFormat($format, $dateTime, $dateTimeZone = null)
     {
-        $oDateTime = parent::createFromFormat($sFormat, $sDateTime, DateTimeZone::create($xDateTimeZone));
+        $objDateTime = parent::createFromFormat($format, $dateTime, DateTimeZone::create($dateTimeZone));
 
-        return new static($oDateTime->format('Y-m-d H:i:s'), $oDateTime->getTimezone());
+        return new static($objDateTime->format('Y-m-d H:i:s'), $objDateTime->getTimezone());
     }
 
     /**
-     * @param $sFormat
+     * @param $format
      *
      * @return $this
      */
-    public function setDefaultFormat($sFormat)
+    public function setDefaultFormat($format)
     {
-        $this->sDefaultFormat = $sFormat;
+        $this->defaultFormat = $format;
 
         return $this;
     }
@@ -163,7 +176,79 @@ class DateTime extends \DateTime
      */
     public function getDefaultFormat()
     {
-        return $this->sDefaultFormat;
+        return $this->defaultFormat;
+    }
+
+    /**
+     * @param int $year
+     *
+     * @return $this
+     */
+    public function setYear($year)
+    {
+        $this->setDate($year, $this->getMonth(), $this->getDay());
+
+        return $this;
+    }
+
+    /**
+     * @param int $months
+     *
+     * @return $this
+     */
+    public function setMonth($month)
+    {
+        $this->setDate($this->getYear(), $month, $this->getDay());
+
+        return $this;
+    }
+
+    /**
+     * @param int $day
+     *
+     * @return $this
+     */
+    public function setDay($day)
+    {
+        $this->setDate($this->getYear(), $this->getMonth(), $day);
+
+        return $this;
+    }
+
+    /**
+     * @param int $hours
+     *
+     * @return $this
+     */
+    public function setHours($hours)
+    {
+        $this->setTime($hours, $this->getMinutes(), $this->getSeconds());
+
+        return $this;
+    }
+
+    /**
+     * @param int $minutes
+     *
+     * @return $this
+     */
+    public function setMinutes($minutes)
+    {
+        $this->setTime($this->getHours(), $minutes, $this->getSeconds());
+
+        return $this;
+    }
+
+    /**
+     * @param int $seconds
+     *
+     * @return $this
+     */
+    public function setSeconds($seconds)
+    {
+        $this->setTime($this->getHours(), $this->getMinutes(), $seconds);
+
+        return $this;
     }
 
     /**
@@ -235,11 +320,19 @@ class DateTime extends \DateTime
      */
     public function getTimeZoneNum()
     {
-        $iSeconds = $this->getOffset();
-        $iHours = (int)floor($iSeconds / DateTimeInterval::PT1H);
-        $iMinutes = $iSeconds - $iHours * DateTimeInterval::PT1H;
+        $seconds = $this->getOffset();
+        $hours = (int)floor($seconds / DateTimeInterval::PT1H);
+        $minutes = $seconds - $hours * DateTimeInterval::PT1H;
 
-        return $iHours . (($iMinutes < 10) ? '0' . $iMinutes : $iMinutes);
+        return $hours . (($minutes < 10) ? '0' . $minutes : $minutes);
+    }
+
+    /**
+     * @return DateTimeZone
+     */
+    public function getTimeZone()
+    {
+        return DateTimeZone::create(parent::getTimeZone());
     }
 
     /**
@@ -253,278 +346,247 @@ class DateTime extends \DateTime
     }
 
     /**
-     * @param mixed $xInterval
-     * @param string $sIntervalName
+     * @param int|string $intervalValue
+     * @param string $intervalName
      *
      * @return $this
      */
-    private function addInterval($xInterval, $sIntervalName = null)
+    private function addInterval($intervalValue, $intervalName = null)
     {
-        $sInterval = $xInterval;
-        if ($sIntervalName) {
-            $sInterval .= ' ' . $sIntervalName;
+        $interval = $intervalValue;
+        if ($intervalName) {
+            $interval .= ' ' . $intervalName;
         }
-        /*
-        if ($sIntervalName === 'months') {
-            $i = \DateInterval::createFromDateString($sInterval);
-            $i = new \DateInterval('P3M');
-            $this->sub($i);
-            return $this;
-        }
-        */
-        return $this->add(\DateInterval::createFromDateString($sInterval));
+
+        return $this->add(\DateInterval::createFromDateString($interval));
     }
 
     /**
-     * @param mixed $xInterval
-     * @param string $sIntervalSymbol
+     * @param int|string $intervalValue
+     * @param string $intervalName
      *
      * @return $this
      */
-    private function subInterval($xInterval, $sIntervalSymbol = null)
+    private function subInterval($intervalValue, $intervalName = null)
     {
-        if (null === $sIntervalSymbol) {
-            if (0 === strpos($xInterval, 'PT')) {
-                $xInterval = substr($xInterval, 2, -1);
-            } elseif (0 === strpos($xInterval, 'P')) {
-                $xInterval = substr($xInterval, 1, -1);
+        if (null === $intervalName) {
+            if (0 === strpos($intervalValue, 'PT')) {
+                $intervalValue = substr($intervalValue, 2, -1);
+            } elseif (0 === strpos($intervalValue, 'P')) {
+                $intervalValue = substr($intervalValue, 1, -1);
             }
-            $sIntervalSymbol = substr($xInterval, -1);
+            $intervalName = substr($intervalValue, -1);
         } else {
-            $xInterval = -(int)$xInterval;
+            $intervalValue = -(int)$intervalValue;
         }
-        return $this->addInterval($xInterval, $sIntervalSymbol);
+
+        return $this->addInterval($intervalValue, $intervalName);
     }
 
     /**
-     * @param int $iYears
+     * @param int $years
      *
      * @return $this
      */
-    public function addYears($iYears)
+    public function addYears($years)
     {
-        return $this->addInterval($iYears, 'years');
+        return $this->addInterval($years, 'years');
     }
 
     /**
-     * @param int $iYears
+     * @param int $years
      *
      * @return $this
      */
-    public function subYears($iYears)
+    public function subYears($years)
     {
-        return $this->addYears(-$iYears);
+        return $this->addYears(-$years);
     }
 
     /**
-     * @param int $iMonths
+     * @param int $months
      *
      * @return $this
      */
-    public function addMonths($iMonths)
+    public function addMonths($months)
     {
-        return $this->addInterval($iMonths, 'months');
+        return $this->addInterval($months, 'months');
     }
 
     /**
-     * @param int $iMonths
+     * @param int $months
      *
      * @return $this
      */
-    public function subMonths($iMonths)
+    public function subMonths($months)
     {
-        return $this->addMonths(-$iMonths);
+        return $this->addMonths(-$months);
     }
 
     /**
-     * @param int $iDays
+     * @param int $days
      *
      * @return $this
      */
-    public function addDays($iDays)
+    public function addDays($days)
     {
-        return $this->addInterval($iDays, 'days');
+        return $this->addInterval($days, 'days');
     }
 
     /**
-     * @param int $iDays
+     * @param int $days
      *
      * @return $this
      */
-    public function subDays($iDays)
+    public function subDays($days)
     {
-        return $this->addDays(-$iDays);
+        return $this->addDays(-$days);
     }
 
     /**
-     * @param $iHours
+     * @param $hours
      *
      * @return $this
      */
-    public function addHours($iHours)
+    public function addHours($hours)
     {
-        return $this->addInterval($iHours, 'hours');
+        return $this->addInterval($hours, 'hours');
     }
 
     /**
-     * @param int $iHours
+     * @param int $hours
      *
      * @return $this
      */
-    public function subHours($iHours)
+    public function subHours($hours)
     {
-        return $this->addHours(-$iHours);
+        return $this->addHours(-$hours);
     }
 
     /**
-     * @param int $iHour
+     * @param $minutes
      *
      * @return $this
      */
-    public function setHours($iHour)
+    public function addMinutes($minutes)
     {
-        return $this->addHours($iHour - $this->getHours());
+        return $this->addInterval($minutes, 'minutes');
     }
 
     /**
-     * @param $iMinutes
+     * @param int $minutes
      *
      * @return $this
      */
-    public function addMinutes($iMinutes)
+    public function subMinutes($minutes)
     {
-        return $this->addInterval($iMinutes, 'minutes');
+        return $this->addMinutes(-$minutes);
     }
 
     /**
-     * @param int $iMinutes
+     * @param int $seconds
      *
      * @return $this
      */
-    public function subMinutes($iMinutes)
+    public function addSeconds($seconds)
     {
-        return $this->addMinutes(-$iMinutes);
+        return $this->addInterval($seconds, 'seconds');
     }
 
     /**
-     * @param int $iMinutes
+     * @param int $seconds
      *
      * @return $this
      */
-    public function setMinutes($iMinutes)
+    public function subSeconds($seconds)
     {
-        return $this->addMinutes($iMinutes - $this->getMinutes());
+        return $this->addSeconds(-$seconds);
     }
 
     /**
-     * @param int $iSeconds
-     *
-     * @return $this
-     */
-    public function addSeconds($iSeconds)
-    {
-        return $this->addInterval($iSeconds, 'seconds');
-    }
-
-    /**
-     * @param int $iSeconds
-     *
-     * @return $this
-     */
-    public function subSeconds($iSeconds)
-    {
-        return $this->addSeconds(-$iSeconds);
-    }
-
-    /**
-     * @param int $iSecond
-     *
-     * @return $this
-     */
-    public function setSeconds($iSecond)
-    {
-        return $this->addSeconds($iSecond - $this->getSeconds());
-    }
-
-    /**
-     * @param string   $sOperator
-     * @param DateTime $oDate
+     * @param string   $operator
+     * @param DateTime $dateTime
      *
      * @return bool
      */
-    public function compare($sOperator, $oDate)
+    public function compare($operator, $dateTime)
     {
-        $iTime1 = $this->getTimestamp();
-        $iTime2 = $oDate->getTimestamp();
-        switch ($sOperator) {
+        $timestamp1 = $this->getTimestamp();
+        $timestamp2 = $dateTime->getTimestamp();
+        switch ($operator) {
             case '<':
             case 'lt':
-                return $iTime1 < $iTime2;
+                return $timestamp1 < $timestamp2;
             case '<=':
             case 'le':
             case 'lte':
-                return $iTime1 <= $iTime2;
+                return $timestamp1 <= $timestamp2;
             case '=':
             case '==':
             case 'eq':
-                return $iTime1 === $iTime2;
+                return $timestamp1 === $timestamp2;
             case '!=':
             case '<>':
             case 'ne':
-                return $iTime1 !== $iTime2;
+                return $timestamp1 !== $timestamp2;
             case '>=':
             case 'gte':
             case 'ge':
-                return $iTime1 >= $iTime2;
+                return $timestamp1 >= $timestamp2;
             case '>':
             case 'gt':
-                return $iTime1 > $iTime2;
+                return $timestamp1 > $timestamp2;
         }
         return false;
     }
 
     /**
-     * @param DateTime $oDate
+     * @param DateTime $dateTime
      *
      * @return int
      */
-    public function compareWidth($oDate)
+    public function compareWith($dateTime)
     {
-        $iTime1 = $this->getTimestamp();
-        $iTime2 = $oDate->getTimestamp();
-        if ($iTime1 < $iTime2) {
+        $timestamp1 = $this->getTimestamp();
+        $timestamp2 = $dateTime->getTimestamp();
+        if ($timestamp1 < $timestamp2) {
             return 1;
         }
-        if ($iTime1 > $iTime2) {
+        if ($timestamp1 > $timestamp2) {
             return -1;
         }
         return 0;
     }
 
     /**
-     * @param $oDate1
-     * @param $oDate2
-     * @param bool $bInclude1
-     * @param bool $bInclude2
+     * between($date1, $date2) - including both dates
+     * between($date1, $date2, false) - excluding both dates
+     * between($date1, $date2, true, false) - including 1st date and excluding 2nd date
+     * between($date1, $date2, false, true) - excluding 1st date and including 2nd date
+     *
+     * @param DateTime $minDateTime
+     * @param DateTime $maxDateTime
+     * @param bool $include1
+     * @param bool $include2
      *
      * @return bool
      */
-    public function between($oDate1, $oDate2, $bInclude1 = true, $bInclude2 = null)
+    public function between($minDateTime, $maxDateTime, $include1 = true, $include2 = null)
     {
-        if (null === $bInclude2) {
-            $bInclude2 = $bInclude1;
+        if (null === $include2) {
+            $include2 = $include1;
         }
-        if ($bInclude1) {
-            $bResult = $this->compare('>=', $oDate1);
+        if ($include1) {
+            $result = $this->compare('>=', $minDateTime);
         } else {
-            $bResult = $this->compare('>', $oDate1);
+            $result = $this->compare('>', $minDateTime);
         }
-        if ($bInclude2) {
-            $bResult = $bResult && $this->compare('<=', $oDate2);
+        if ($include2) {
+            $result = $result && $this->compare('<=', $maxDateTime);
         } else {
-            $bResult = $bResult && $this->compare('<', $oDate2);
+            $result = $result && $this->compare('<', $maxDateTime);
         }
-        return $bResult;
+        return $result;
     }
 
     /**
@@ -536,7 +598,5 @@ class DateTime extends \DateTime
     }
 
 }
-
-// EOF
 
 // EOF

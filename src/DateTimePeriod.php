@@ -13,59 +13,59 @@ namespace avadim\Chrono;
  */
 class DateTimePeriod
 {
-    protected $oDate1;
-    protected $oDate2;
+    protected $minDateTime;
+    protected $maxDateTime;
 
     /**
      * DateTimePeriod constructor
      *
-     * @param mixed $xDate1
-     * @param mixed $xDate2
+     * @param mixed $minDateTime
+     * @param mixed $maxDateTime
      *
      * @throws \Exception
      */
-    public function __construct($xDate1, $xDate2)
+    public function __construct($minDateTime, $maxDateTime)
     {
-        if (is_object($xDate1) && $xDate1 instanceof DateTime) {
-            $this->oDate1 = $xDate1;
+        if (is_object($minDateTime) && $minDateTime instanceof DateTime) {
+            $this->minDateTime = $minDateTime;
         } else {
-            $this->oDate1 = new DateTime($xDate1);
+            $this->minDateTime = new DateTime($minDateTime);
         }
-        if (is_object($xDate2) && $xDate2 instanceof DateTime) {
-            $this->oDate2 = $xDate2;
+        if (is_object($maxDateTime) && $maxDateTime instanceof DateTime) {
+            $this->maxDateTime = $maxDateTime;
         } else {
-            $this->oDate2 = new DateTime($xDate2);
+            $this->maxDateTime = new DateTime($maxDateTime);
         }
     }
 
     /**
-     * @param string $sPeriod
-     * @param string $sFormat
+     * @param string $period
+     * @param string $format
      *
      * @return array
      */
-    public function sequenceOf($sPeriod, $sFormat = null)
+    public function sequenceOf($period, $format = null)
     {
-        $aSequence = [];
-        $oDate = clone $this->oDate1;
-        $xKey = -1;
+        $sequence = [];
+        $dateTime = clone $this->minDateTime;
+        $key = -1;
         do {
-            if ($sFormat) {
-                if ($sFormat === 'YQ') {
-                    $xKey = $oDate->format('Y');
-                    $xKey .= 'Q' . ((int)floor(($oDate->getMonth() - 1)/ 3) + 1);
+            if ($format) {
+                if ($format === 'YQ') {
+                    $key = $dateTime->format('Y');
+                    $key .= 'Q' . ((int)floor(($dateTime->getMonth() - 1)/ 3) + 1);
                 } else {
-                    $xKey = $oDate->format($sFormat);
+                    $key = $dateTime->format($format);
                 }
             } else {
-                $xKey++;
+                $key++;
             }
-            $aSequence[$xKey] = $oDate;
-            $oDate = clone $oDate;
-            $oDate->modify($sPeriod);
-        } while($oDate->compare('<=', $this->oDate2));
+            $sequence[$key] = $dateTime;
+            $dateTime = clone $dateTime;
+            $dateTime->modify($period);
+        } while($dateTime->compare('<=', $this->maxDateTime));
 
-        return $aSequence;
+        return $sequence;
     }
 
     /**

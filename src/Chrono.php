@@ -13,419 +13,575 @@ namespace avadim\Chrono;
  */
 class Chrono
 {
-    public static $sDefaultFormat = 'Y-m-d H:i:s';
+    public static $defaultFormat = 'Y-m-d H:i:s';
 
     /**
-     * @param mixed $xInterval
-     * @param string $sBaseDate
+     * Usage:
+     *      createInterval(100) -- Interval is 100 seconds
+     *      createInterval('PT100S') -- The same as above
+     *      createInterval('P1M20DT3H15M') -- One month 20 days 3 hours 15 minutes
+     *      createInterval('2 weeks')
+     *      createInterval('1 day + 12 hours')
+     *
+     * @param mixed $interval
+     * @param string $baseDate
      *
      * @return DateTimeInterval
      *
      * @throws \Exception
      */
-    public static function createInterval($xInterval, $sBaseDate = null)
+    public static function createInterval($interval, $baseDate = null)
     {
-        if ($xInterval instanceof DateTimeInterval) {
-            return $xInterval;
+        if ($interval instanceof DateTimeInterval) {
+            $interval = clone $interval;
+            $interval->setBaseDateTime($baseDate);
         }
-        return new DateTimeInterval($xInterval, $sBaseDate);
+        return new DateTimeInterval($interval, $baseDate);
     }
 
     /**
-     * @param mixed $xDateTime
-     * @param \DateTimeZone|string $xDateTimeZone
+     * @see https://www.php.net/manual/en/datetime.formats.php
+     *
+     * @param mixed $dateTime
+     * @param \DateTimeZone|string $timeZone
      *
      * @return DateTime
      *
      * @throws \Exception
      */
-    public static function createDate($xDateTime = 'now', $xDateTimeZone = null)
+    public static function createDate($dateTime = 'now', $timeZone = null)
     {
-        if ($xDateTime instanceof \DateTime) {
-            $sDateTime = $xDateTime->format('Y-m-d H:i:s.u O');
-        } elseif (!is_numeric($xDateTime)) {
-            $sDateTime = (string)$xDateTime;
+        if (!($dateTime instanceof DateTime)) {
+            if ($dateTime instanceof \DateTime) {
+                $strDateTime = $dateTime->format('Y-m-d H:i:s.u O');
+            } elseif (!is_numeric($dateTime)) {
+                $strDateTime = (string)$dateTime;
+            } else {
+                $strDateTime = $dateTime;
+            }
+            $resultDateTime = new DateTime($strDateTime);
         } else {
-            $sDateTime = $xDateTime;
+            $resultDateTime = clone $dateTime;
         }
-        $oDate = new DateTime($sDateTime);
-        $oDate->setDefaultFormat(self::$sDefaultFormat);
-        if (null !== $xDateTimeZone) {
-            $oDate->setTimezone(DateTimeZone::create($xDateTimeZone));
+        $resultDateTime->setDefaultFormat(self::$defaultFormat);
+        if (null !== $timeZone) {
+            $resultDateTime->setTimezone(DateTimeZone::create($timeZone));
         }
-        return $oDate;
+
+        return $resultDateTime;
     }
 
     /**
-     * @param \DateTimeZone|string $xDateTimeZone
+     * @param int $year
+     * @param int $month
+     * @param int $day
+     * @param int $hours
+     * @param int $minutes
+     * @param int $seconds
+     * @param \DateTimeZone|string $timeZone
      *
      * @return DateTime
      *
      * @throws \Exception
      */
-    public static function now($xDateTimeZone = null)
+    public static function make($year, $month = 1, $day = 1, $hours = 0, $minutes = 0, $seconds = 0, $timeZone = null)
     {
-        return self::createDate('now', $xDateTimeZone);
+        $strDate = sprintf('%s-%s-%s %s:%02s:%02s', $year, $month, $day, $hours, $minutes, $seconds);
+        $now = static::now($timeZone);
+        $dateTime = DateTime::createFromFormat('Y-m-d H:i:s', $strDate, $timeZone ?? date_default_timezone_get());
+        $dateTime->setDefaultFormat($now->getDefaultFormat());
+
+        return $dateTime;
     }
 
     /**
-     * @param \DateTimeZone|string $xDateTimeZone
+     * @param \DateTimeZone|string $timeZone
      *
      * @return DateTime
      *
      * @throws \Exception
      */
-    public static function today($xDateTimeZone = null)
+    public static function now($timeZone = null)
     {
-        return self::createFrom(null, null, null, 0, 0, 0, $xDateTimeZone);
+        return self::createDate('now', $timeZone);
     }
 
     /**
-     * @param int|null $iYear
-     * @param int|null $iMonth
-     * @param int|null $iDay
-     * @param int|null $iHour
-     * @param int|null $iMinute
-     * @param int|null $iSecond
-     * @param \DateTimeZone|string $sTimeZone
+     * @param \DateTimeZone|string $timeZone
      *
      * @return DateTime
      *
      * @throws \Exception
      */
-    public static function createFrom($iYear, $iMonth = null, $iDay = null, $iHour = null, $iMinute = null, $iSecond = null, $sTimeZone = null)
+    public static function today($timeZone = null)
+    {
+        return self::createFrom(null, null, null, 0, 0, 0, $timeZone);
+    }
+
+    /**
+     * @param int $year
+     * @param int $month
+     * @param int $day
+     * @param int $hours
+     * @param int $minutes
+     * @param int $seconds
+     * @param \DateTimeZone|string $timeZone
+     *
+     * @return DateTime
+     *
+     * @throws \Exception
+     */
+    public static function createFrom($year, $month = null, $day = null, $hours = null, $minutes = null, $seconds = null, $timeZone = null)
     {
         if (func_num_args() < 7) {
-            $aArgs = func_get_args();
-            $xLast = end($aArgs);
-            if (!is_numeric($xLast)) {
-                $sTimeZone = array_pop($aArgs);
+            $args = func_get_args();
+            $last = end($args);
+            if (!is_numeric($last)) {
+                $timeZone = array_pop($args);
+            } else {
+                $timeZone = date_default_timezone_get();
             }
-            if (count($aArgs) < 6) {
-                $aArgs = array_merge($aArgs, array_fill(0, 6 - count($aArgs), null));
+            if (count($args) < 6) {
+                $args = array_merge($args, array_fill(0, 6 - count($args), null));
             }
-            list($iYear, $iMonth, $iDay, $iHour, $iMinute, $iSecond) = $aArgs;
+            list($year, $month, $day, $hours, $minutes, $seconds) = $args;
         }
-        $oDate = static::now($sTimeZone);
-        $sDateString = sprintf(
+        $nate = static::now($timeZone);
+        $strDate = sprintf(
             '%s-%s-%s %s:%02s:%02s',
-            (null !== $iYear) ? $iYear : $oDate->getYear(),
-            (null !== $iMonth) ? $iMonth : $oDate->getMonth(),
-            (null !== $iDay) ? $iDay : $oDate->getDay(),
-            (null !== $iHour) ? $iHour : $oDate->getHours(),
-            (null !== $iMinute) ? $iMinute : $oDate->getMinutes(),
-            (null !== $iSecond) ? $iSecond : $oDate->getSeconds()
+            (null !== $year) ? $year : $nate->getYear(),
+            (null !== $month) ? $month : $nate->getMonth(),
+            (null !== $day) ? $day : $nate->getDay(),
+            (null !== $hours) ? $hours : $nate->getHours(),
+            (null !== $minutes) ? $minutes : $nate->getMinutes(),
+            (null !== $seconds) ? $seconds : $nate->getSeconds()
         );
-        $oDateTime = DateTime::createFromFormat('Y-m-d H:i:s', $sDateString, $oDate->getTimezone());
-        $oDateTime->setDefaultFormat($oDate->getDefaultFormat());
 
-        return $oDateTime;
+        $dateTime = DateTime::createFromFormat('Y-m-d H:i:s', $strDate, $nate->getTimezone());
+        $dateTime->setDefaultFormat($nate->getDefaultFormat());
+
+        return $dateTime;
     }
 
     /**
-     * @param int|null $iYear
-     * @param int|null $iMonth
-     * @param int|null $iDay
-     * @param \DateTimeZone|string $sTimeZone
+     * @param int $year
+     * @param int $month
+     * @param int $day
+     * @param \DateTimeZone|string $timeZone
      *
      * @return DateTime
      *
      * @throws \Exception
      */
-    public static function createFromDate($iYear, $iMonth = null, $iDay = null, $sTimeZone = null)
+    public static function createFromDate($year, $month = null, $day = null, $timeZone = null)
     {
-        return static::createFrom($iYear, $iMonth, $iDay, $iHour = null, $iMinute = null, $iSecond = null, $sTimeZone);
+        return static::createFrom($year, $month, $day, null, null, null, $timeZone);
     }
 
     /**
-     * @param int|null $iHour
-     * @param int|null $iMinute
-     * @param int|null $iSecond
-     * @param \DateTimeZone|string $sTimeZone
+     * @param int $hours
+     * @param int $minutes
+     * @param int $seconds
+     * @param \DateTimeZone|string $timeZone
      *
      * @return DateTime
      *
      * @throws \Exception
      */
-    public static function createFromTime($iHour = null, $iMinute = null, $iSecond = null, $sTimeZone = null)
+    public static function createFromTime($hours = null, $minutes = null, $seconds = null, $timeZone = null)
     {
-        return static::createFrom(null, null, null, $iHour, $iMinute, $iSecond, $sTimeZone);
+        return static::createFrom(null, null, null, $hours, $minutes, $seconds, $timeZone);
     }
 
     /**
-     * @param $xDate1
-     * @param $xDate2
+     * @param mixed $date1
+     * @param mixed $date2
      *
      * @return DateTimePeriod
      *
      * @throws \Exception
      */
-    public static function createPeriod($xDate1, $xDate2)
+    public static function createPeriod($date1, $date2)
     {
-        $oDate1 = self::createDate($xDate1);
-        $oDate2 = self::createDate($xDate2);
+        if (!is_object($date1) || !($date1 instanceof DateTime)) {
+            $date1 = self::createDate($date1);
+        }
+        if (!is_object($date2) || !($date2 instanceof DateTime)) {
+            $date2 = self::createDate($date2);
+        }
 
-        return new DateTimePeriod($oDate1, $oDate2);
+        return new DateTimePeriod($date1, $date2);
     }
 
     /**
-     * @param string $sMethod
-     * @param string $sInterval
-     * @param string $sBaseDate
+     * @param string $method
+     * @param string $strInterval
+     * @param string $baseDate
      *
      * @return float
      *
      * @throws \Exception
      */
-    private static function calcTotal($sMethod, $sInterval, $sBaseDate = null)
+    protected static function _calcTotal($method, $strInterval, $baseDate = null)
     {
-        if (is_numeric($sInterval)) {
-            return (float)$sInterval;
+        if (is_numeric($strInterval)) {
+            return (float)$strInterval;
         }
-        if (!is_string($sInterval)) {
+        if (!is_string($strInterval)) {
             return null;
         }
 
-        $oInterval = static::createInterval($sInterval, $sBaseDate);
+        $interval = static::createInterval($strInterval, $baseDate);
 
-        return $oInterval->$sMethod();
+        return $interval->$method();
     }
 
     /**
-     * Преобразует интервал в число секунд
+     * Converts an string interval to a number of seconds
      *
-     * @param string $sInterval - значение интервала по спецификации ISO 8601 или в человекочитаемом виде
-     * @param string $sBaseDate
+     * @param string $strInterval - Interval in ISO 8601 specification or human relative formats
+     * @param string $baseDate
      *
      * @return  int
      *
      * @throws \Exception
      */
-    public static function totalSeconds($sInterval, $sBaseDate = null)
+    public static function totalSeconds($strInterval, $baseDate = null)
     {
-        return static::calcTotal('totalSeconds', $sInterval, $sBaseDate);
+        return static::_calcTotal('totalSeconds', $strInterval, $baseDate);
     }
 
     /**
-     * Преобразует интервал в число секунд
+     * Converts an string interval to a number of minutes
      *
-     * @param string $sInterval  - значение интервала по спецификации ISO 8601 или в человекочитаемом виде
-     * @param string $sBaseDate
+     * @param string $strInterval  - Interval in ISO 8601 specification or human relative formats
+     * @param string $baseDate
      *
      * @return  int
      *
      * @throws \Exception
      */
-    public static function totalMinutes($sInterval, $sBaseDate = null)
+    public static function totalMinutes($strInterval, $baseDate = null)
     {
-        return static::calcTotal('totalMinutes', $sInterval, $sBaseDate);
+        return static::_calcTotal('totalMinutes', $strInterval, $baseDate);
     }
 
     /**
-     * Преобразует интервал в число секунд
+     * Converts an string interval to a number of hours
      *
-     * @param string $sInterval  - значение интервала по спецификации ISO 8601 или в человекочитаемом виде
-     * @param string $sBaseDate
+     * @param string $strInterval  - Interval in ISO 8601 specification or human relative formats
+     * @param string $baseDate
      *
      * @return  int
      *
      * @throws \Exception
      */
-    public static function totalHours($sInterval, $sBaseDate = null)
+    public static function totalHours($strInterval, $baseDate = null)
     {
-        return static::calcTotal('totalHours', $sInterval, $sBaseDate);
+        return static::_calcTotal('totalHours', $strInterval, $baseDate);
     }
 
     /**
-     * Преобразует интервал в число секунд
+     * Converts an string interval to a number of days
      *
-     * @param string $sInterval  - значение интервала по спецификации ISO 8601 или в человекочитаемом виде
-     * @param string $sBaseDate
+     * @param string $strInterval  - Interval in ISO 8601 specification or human relative formats
+     * @param string $baseDate
      *
      * @return  int
      *
      * @throws \Exception
      */
-    public static function totalDays($sInterval, $sBaseDate = null)
+    public static function totalDays($strInterval, $baseDate = null)
     {
-        return static::calcTotal('totalDays', $sInterval, $sBaseDate);
+        return static::_calcTotal('totalDays', $strInterval, $baseDate);
     }
 
     /**
-     * @param string $sDate
-     * @param string $sInterval
+     * @param string $date
+     * @param string $strInterval
      *
      * @return DateTime
      *
      * @throws \Exception
      */
-    public static function dateAdd($sDate, $sInterval)
+    public static function dateAdd($date, $strInterval)
     {
-        $oDate = static::createDate($sDate);
-        $oInterval = static::createInterval($sInterval);
-        $oDate->add($oInterval->interval());
+        $dateTime = static::createDate($date);
+        $oInterval = static::createInterval($strInterval);
+        $dateTime->add($oInterval->interval());
 
-        return $oDate;
+        return $dateTime;
     }
 
     /**
-     * @param string $sDate
-     * @param string $sInterval
-     * @param string $sFormat
+     * @param string $date
+     * @param string $strInterval
+     * @param string $format
      *
      * @return string
      *
      * @throws \Exception
      */
-    public static function dateAddFormat($sDate, $sInterval, $sFormat = null)
+    public static function dateAddFormat($date, $strInterval, $format = null)
     {
-        $oDate = static::dateAdd($sDate, $sInterval);
-        if (null !== $sFormat) {
-            return $oDate->format($sFormat);
+        $dateTime = static::dateAdd($date, $strInterval);
+        if (null !== $format) {
+            return $dateTime->format($format);
         }
-        return (string)$oDate;
+        return (string)$dateTime;
     }
 
     /**
-     * @param string $sDate
-     * @param string $sInterval
+     * @param string $date
+     * @param string $strInterval
      *
      * @return DateTime
      *
      * @throws \Exception
      */
-    public static function dateSub($sDate, $sInterval)
+    public static function dateSub($date, $strInterval)
     {
-        $oDate = static::createDate($sDate);
-        $oInterval = static::createInterval($sInterval);
-        $oDate->sub($oInterval->interval());
+        $dateTime = static::createDate($date);
+        $interval = static::createInterval($strInterval);
+        $dateTime->sub($interval->interval());
 
-        return $oDate;
+        return $dateTime;
     }
 
     /**
-     * @param string $sDate
-     * @param string $sInterval
-     * @param string $sFormat
+     * @param string $date
+     * @param string $strInterval
+     * @param string $format
      *
      * @return string
      *
      * @throws \Exception
      */
-    public static function dateSubFormat($sDate, $sInterval, $sFormat = null)
+    public static function dateSubFormat($date, $strInterval, $format = null)
     {
-        $oDate = static::dateSub($sDate, $sInterval);
-        if (null !== $sFormat) {
-            return $oDate->format($sFormat);
+        $dateTime = static::dateSub($date, $strInterval);
+        if (null !== $format) {
+            return $dateTime->format($format);
         }
-        return (string)$oDate;
+        return (string)$dateTime;
     }
 
     /**
-     * @param string $sDate1
-     * @param string $sDate2
+     * Calculates the difference between two dates in seconds
+     *
+     * @param string $date1
+     * @param string $date2
      *
      * @return int
      *
      * @throws \Exception
      */
-    public static function dateDiffSeconds($sDate1, $sDate2)
+    public static function dateDiffSeconds($date1, $date2)
     {
-        $oDate1 = static::createDate($sDate1);
-        $oDate2 = static::createDate($sDate2);
+        $dateTime1 = static::createDate($date1);
+        $dateTime2 = static::createDate($date2);
 
-        return $oDate2->getTimestamp() - $oDate1->getTimestamp();
+        return $dateTime2->getTimestamp() - $dateTime1->getTimestamp();
     }
 
     /**
-     * @param string $sDate1
-     * @param string $sDate2
+     * Calculates the difference between two dates in minutes
+     *
+     * @param string $date1
+     * @param string $date2
      *
      * @return int
      *
      * @throws \Exception
      */
-    public static function dateDiffMinutes($sDate1, $sDate2)
+    public static function dateDiffMinutes($date1, $date2)
     {
-        return (int)floor(self::dateDiffSeconds($sDate1, $sDate2) / DateTimeInterval::PT1M);
+        $dateTime1 = static::createDate($date1);
+        $dateTime2 = static::createDate($date2);
+
+        return (int)(($dateTime2->getTimestamp() - $dateTime1->getTimestamp()) / DateTimeInterval::PT1M);
     }
 
     /**
-     * @param string $sDate1
-     * @param string $sDate2
+     * Calculates the difference between two dates in hours
+     *
+     * @param string $date1
+     * @param string $date2
      *
      * @return int
      *
      * @throws \Exception
      */
-    public static function dateDiffHours($sDate1, $sDate2)
+    public static function dateDiffHours($date1, $date2)
     {
-        return (int)floor(self::dateDiffSeconds($sDate1, $sDate2) / DateTimeInterval::PT1H);
+        $dateTime1 = static::createDate($date1);
+        $dateTime2 = static::createDate($date2);
+
+        return (int)(($dateTime2->getTimestamp() - $dateTime1->getTimestamp()) / DateTimeInterval::PT1H);
     }
 
     /**
-     * @param string $sDate1
-     * @param string $sDate2
+     * Calculates the difference between two dates in days
+     *
+     * @param string $date1
+     * @param string $date2
      *
      * @return int
      *
      * @throws \Exception
      */
-    public static function dateDiffDays($sDate1, $sDate2)
+    public static function dateDiffDays($date1, $date2)
     {
-        return (int)floor(self::dateDiffSeconds($sDate1, $sDate2) / DateTimeInterval::P1D);
+        $dateTime1 = static::createDate($date1);
+        $dateTime2 = static::createDate($date2);
+
+        return (int)(($dateTime2->getTimestamp() - $dateTime1->getTimestamp()) / DateTimeInterval::P1D);
     }
 
     /**
-     * @param $xDate1
-     * @param $sOperator
-     * @param $xDate2
+     * @param $dateTime1
+     * @param $dateTime2
+     *
+     * @return int
+     *
+     * @throws \Exception
+     */
+    public static function dateDiffMonths($dateTime1, $dateTime2)
+    {
+        if (!($dateTime1 instanceof DateTime)) {
+            $dateTime1 = static::createDate($dateTime1);
+        }
+        if (!($dateTime2 instanceof DateTime)) {
+            $dateTime2 = static::createDate($dateTime2);
+        }
+
+        if ($dateTime1->getTimestamp() > $dateTime2->getTimestamp()) {
+            $negative = -1;
+            $checkDate1 = clone $dateTime2;
+            $checkDate2 = clone $dateTime1;
+        } else {
+            $negative = 1;
+            $checkDate1 = clone $dateTime1;
+            $checkDate2 = clone $dateTime2;
+        }
+        $years = self::dateDiffYears($checkDate1, $checkDate2);
+        if ($years === 0 && $checkDate1->getYear() !== $checkDate2->getYear()) {
+            $months = 11;
+        } else {
+            $months = $years * 12;
+        }
+        $months += $checkDate2->getMonth() - $checkDate1->getMonth();
+
+        return $months * $negative;
+
+    }
+
+    /**
+     * @param $dateTime1
+     * @param $dateTime2
+     *
+     * @return int
+     *
+     * @throws \Exception
+     */
+    public static function dateDiffYears($dateTime1, $dateTime2)
+    {
+        if (!($dateTime1 instanceof DateTime)) {
+            $dateTime1 = static::createDate($dateTime1);
+        }
+        if (!($dateTime2 instanceof DateTime)) {
+            $dateTime2 = static::createDate($dateTime2);
+        }
+        if ($dateTime2->getTimestamp() === $dateTime1->getTimestamp()) {
+            return 0;
+        }
+        if ($dateTime1->getTimestamp() > $dateTime2->getTimestamp()) {
+            $negative = true;
+            $checkDate1 = clone $dateTime2;
+            $checkDate2 = clone $dateTime1;
+        } else {
+            $negative = false;
+            $checkDate1 = clone $dateTime1;
+            $checkDate2 = clone $dateTime2;
+        }
+
+        $result = $checkDate2->getYear() - $checkDate1->getYear();
+        if ($checkDate1->setYear($checkDate2->getYear())->getTimestamp() > $checkDate2->getTimestamp()) {
+            --$result;
+        }
+        return $negative ? -$result : $result;
+    }
+
+    /**
+     * Compare two dates
+     *
+     * @param $dateTime1
+     * @param $operator
+     * @param $dateTime2
      *
      * @return bool
      *
      * @throws \Exception
      */
-    public static function compare($xDate1, $sOperator, $xDate2)
+    public static function compare($dateTime1, $operator, $dateTime2)
     {
-        $oDate1 = static::createDate($xDate1);
-        $oDate2 = static::createDate($xDate2);
+        if (!($dateTime1 instanceof DateTime)) {
+            $dateTime1 = static::createDate($dateTime1);
+        }
+        if (!($dateTime2 instanceof DateTime)) {
+            $dateTime2 = static::createDate($dateTime2);
+        }
 
-        return $oDate1->compare($sOperator, $oDate2);
+        return $dateTime1->compare($operator, $dateTime2);
     }
 
     /**
-     * @param $xDate1
-     * @param $xDate2
+     * Compares two dates and returns -1, 0 or 1
+     *
+     * @param $dateTime1
+     * @param $dateTime2
      *
      * @return int
      *
      * @throws \Exception
      */
-    public static function compareWidth($xDate1, $xDate2)
+    public static function compareWith($dateTime1, $dateTime2)
     {
-        $oDate1 = static::createDate($xDate1);
-        $oDate2 = static::createDate($xDate2);
+        if (!($dateTime1 instanceof DateTime)) {
+            $dateTime1 = static::createDate($dateTime1);
+        }
+        if (!($dateTime2 instanceof DateTime)) {
+            $dateTime2 = static::createDate($dateTime2);
+        }
 
-        return $oDate1->compareWidth($oDate2);
+        return $dateTime1->compareWith($dateTime2);
     }
 
     /**
-     * @param $xComparedDate
-     * @param $xDate1
-     * @param $xDate2
-     * @param bool $bInclude
+     * Determines if the passed date is between two other dates
+     *
+     * @param mixed $comparedDate
+     * @param mixed $minDate
+     * @param mixed $maxDate
+     * @param bool $include Including boundary dates
      *
      * @return bool
      *
      * @throws \Exception
      */
-    public static function between($xComparedDate, $xDate1, $xDate2, $bInclude = true)
+    public static function between($comparedDate, $minDate, $maxDate, $include = true)
     {
-        $oComparedDate = static::createDate($xComparedDate);
-        $oDate1 = static::createDate($xDate1);
-        $oDate2 = static::createDate($xDate2);
+        if (!($comparedDate instanceof DateTime)) {
+            $comparedDate = static::createDate($comparedDate);
+        }
+        if (!($minDate instanceof DateTime)) {
+            $minDate = static::createDate($minDate);
+        }
+        if (!($maxDate instanceof DateTime)) {
+            $maxDate = static::createDate($maxDate);
+        }
 
-        return $oComparedDate->between($oDate1, $oDate2, $bInclude);
+        return $comparedDate->between($minDate, $maxDate, $include);
     }
 
 }

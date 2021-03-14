@@ -21,170 +21,178 @@ class DateTimeInterval
     const P1M = 2592000; // 60 * 60 * 24 * 30; = 1 month
     const P1Y = 31536000; // 60 * 60 * 24 * 365; = 1 year
 
-    protected $sBaseDate;
-    protected $oDT;
+    protected $baseDateTime;
+    protected $dateTimeInterval;
 
     /**
      * DateTimeInterval constructor
      *
-     * @param $sInterval
-     * @param null $sBaseDate
+     * @param string $interval
+     * @param mixed $baseDateTime
      *
      * @throws \Exception
      */
-    public function __construct($sInterval, $sBaseDate = null)
+    public function __construct($interval, $baseDateTime = null)
     {
         try {
-            if (is_numeric($sInterval)) {
-                $this->oDT = new \DateInterval('PT' . $sInterval . 'S');
-            } elseif (is_string($sInterval) && $sInterval[0] === 'P') {
-                $this->oDT = new \DateInterval($sInterval);
+            if (is_numeric($interval)) {
+                $this->dateTimeInterval = new \DateInterval('PT' . $interval . 'S');
+            } elseif (is_string($interval) && $interval[0] === 'P') {
+                $this->dateTimeInterval = new \DateInterval($interval);
             } else {
-                $this->oDT = \DateInterval::createFromDateString($sInterval);
+                $this->dateTimeInterval = \DateInterval::createFromDateString($interval);
             }
-        } catch (\Exception $oE) {
-            $this->oDT = new \DateInterval(self::normalize($sInterval));
+        } catch (\Exception $e) {
+            $this->dateTimeInterval = new \DateInterval(self::normalize($interval));
         }
-        if ($sBaseDate) {
-            $this->sBaseDate = $sBaseDate;
+        if ($baseDateTime) {
+            $this->setBaseDateTime($baseDateTime);
         }
     }
 
     /**
      * Normalizes interval according by ISO 8601
      *
-     * @param   string  $sInterval
+     * @param string $intervalString
      *
-     * @return  string
+     * @return string
      */
-    public static function normalize($sInterval)
+    public static function normalize($intervalString)
     {
-        $sResult = '';
-        if (preg_match('/P(?P<y>\d+Y)?(?P<m>\d+M)?(?P<w>\d+W)?(?P<d>\d+D)?(T)?(?P<th>\d+H)?(?P<tm>\d+M)?(?P<ti>\d+I)?(?P<ts>\d+S)?/i', $sInterval, $aM)) {
-            $sP = '';
-            $sT = '';
-            if (isset($aM['y'])) {
-                $sP .= $aM['y'];
+        $result = '';
+        if (preg_match('/P(?P<y>\d+Y)?(?P<m>\d+M)?(?P<w>\d+W)?(?P<d>\d+D)?(T)?(?P<th>\d+H)?(?P<tm>\d+M)?(?P<ti>\d+I)?(?P<ts>\d+S)?/i', $intervalString, $matches)) {
+            $p = '';
+            $t = '';
+            if (isset($matches['y'])) {
+                $p .= $matches['y'];
             }
-            if (isset($aM['m'])) {
-                $sP .= $aM['m'];
+            if (isset($matches['m'])) {
+                $p .= $matches['m'];
             }
             // can not be used with D
-            if (isset($aM['w']) && !isset($aM['d'])) {
-                $sP .= $aM['d'];
+            if (isset($matches['w']) && !isset($matches['d'])) {
+                $p .= $matches['d'];
             }
-            if (isset($aM['d'])) {
-                $sP .= $aM['d'];
+            if (isset($matches['d'])) {
+                $p .= $matches['d'];
             }
-            if (isset($aM['th'])) {
-                $sT .= $aM['th'];
+            if (isset($matches['th'])) {
+                $t .= $matches['th'];
             }
-            if (isset($aM['tm'])) {
-                $sT .= $aM['tm'];
+            if (isset($matches['tm'])) {
+                $t .= $matches['tm'];
             }
             // non-standard I is replaced by M
-            if (!isset($aM['tm']) && isset($aM['ti'])) {
-                $sT .= str_replace('I', 'M', $aM['ti']);
+            if (!isset($matches['tm']) && isset($matches['ti'])) {
+                $t .= str_replace('I', 'M', $matches['ti']);
             }
-            if (isset($aM['ts'])) {
-                $sT .= $aM['ts'];
+            if (isset($matches['ts'])) {
+                $t .= $matches['ts'];
             }
-            if ($sP || $sT) {
-                $sResult = 'P';
+            if ($p || $t) {
+                $result = 'P';
             }
-            if ($sP) {
-                $sResult .= $sP;
+            if ($p) {
+                $result .= $p;
             }
-            if ($sT) {
-                $sResult .= 'T' . $sT;
+            if ($t) {
+                $result .= 'T' . $t;
             }
         }
-        if ($sResult) {
-            return strtoupper($sResult);
+        if ($result) {
+            return strtoupper($result);
         }
         return 'PT0S';
     }
 
     /**
+     * @param $baseDateTime
+     */
+    public function setBaseDateTime($baseDateTime)
+    {
+        $this->baseDateTime = $baseDateTime;
+    }
+
+    /**
      * Get total seconds of interval
      *
-     * @param string $sBaseDate
+     * @param string $baseDateTime
      *
      * @return float
      *
      * @throws \Exception
      */
-    public function totalTime($sBaseDate = null)
+    public function totalTime($baseDateTime = null)
     {
-        $f = isset($this->oDT->f) ? $this->oDT->f : 0.0;
-        if (null !== $sBaseDate || $this->sBaseDate) {
-            $oDate1 = new \DateTimeImmutable($sBaseDate ?: $this->sBaseDate);
-            $oDate2 = $oDate1->add($this->oDT);
-            $oInterval = $oDate2->diff($oDate1);
-            return (float)$oInterval->format('%a') * self::P1D + $oInterval->h * self::PT1H + $oInterval->i * self::PT1M + $oInterval->s + $f;
+        $f = isset($this->dateTimeInterval->f) ? $this->dateTimeInterval->f : 0.0;
+        if (null !== $baseDateTime || $this->baseDateTime) {
+            $date1 = new \DateTimeImmutable($baseDateTime ?: $this->baseDateTime);
+            $date2 = $date1->add($this->dateTimeInterval);
+            $interval = $date2->diff($date1);
+            return (float)$interval->format('%a') * self::P1D + $interval->h * self::PT1H + $interval->i * self::PT1M + $interval->s + $f;
         }
-        return ($this->oDT->y * self::P1Y)
-            + ($this->oDT->m * self::P1M)
-            + ($this->oDT->d * self::P1D)
-            + ($this->oDT->h * self::PT1H)
-            + ($this->oDT->i * self::PT1M)
-            + $this->oDT->s + $f;
+        return ($this->dateTimeInterval->y * self::P1Y)
+            + ($this->dateTimeInterval->m * self::P1M)
+            + ($this->dateTimeInterval->d * self::P1D)
+            + ($this->dateTimeInterval->h * self::PT1H)
+            + ($this->dateTimeInterval->i * self::PT1M)
+            + $this->dateTimeInterval->s + $f;
     }
 
     /**
      * Get total seconds of interval
      *
-     * @param string $sBaseDate
+     * @param string $baseDateTime
      *
      * @return int
      *
      * @throws \Exception
      */
-    public function totalSeconds($sBaseDate = null)
+    public function totalSeconds($baseDateTime = null)
     {
-        return (int)floor($this->totalTime($sBaseDate));
+        return (int)floor($this->totalTime($baseDateTime));
     }
 
     /**
      * Get total minutes of interval
      *
-     * @param null $sBaseDate
+     * @param string $baseDateTime
      *
      * @return int
      *
      * @throws \Exception
      */
-    public function totalMinutes($sBaseDate = null)
+    public function totalMinutes($baseDateTime = null)
     {
-        return (int)floor($this->totalSeconds($sBaseDate) / self::PT1M);
+        return (int)floor($this->totalSeconds($baseDateTime) / self::PT1M);
     }
 
     /**
      * Get total hours of interval
      *
-     * @param null $sBaseDate
+     * @param string $baseDateTime
      *
      * @return int
      *
      * @throws \Exception
      */
-    public function totalHours($sBaseDate = null)
+    public function totalHours($baseDateTime = null)
     {
-        return (int)floor($this->totalSeconds($sBaseDate) / self::PT1H);
+        return (int)floor($this->totalSeconds($baseDateTime) / self::PT1H);
     }
 
     /**
      * Get total days of interval
      *
-     * @param null $sBaseDate
+     * @param string $baseDateTime
      *
      * @return int
      *
      * @throws \Exception
      */
-    public function totalDays($sBaseDate = null)
+    public function totalDays($baseDateTime = null)
     {
-        return (int)floor($this->totalSeconds($sBaseDate) / self::P1D);
+        return (int)floor($this->totalSeconds($baseDateTime) / self::P1D);
     }
 
     /**
@@ -192,7 +200,7 @@ class DateTimeInterval
      */
     public function interval()
     {
-        return $this->oDT;
+        return $this->dateTimeInterval;
     }
 }
 
