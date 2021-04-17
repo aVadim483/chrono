@@ -466,7 +466,7 @@ class Chrono
         }
         $years = self::dateDiffYears($checkDate1, $checkDate2);
         if ($years === 0 && $checkDate1->getYear() !== $checkDate2->getYear()) {
-            $months = 11;
+            $months = 12;
         } else {
             $months = $years * 12;
         }
